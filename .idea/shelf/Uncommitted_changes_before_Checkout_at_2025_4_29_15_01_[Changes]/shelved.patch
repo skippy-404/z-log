@@ -1,0 +1,9 @@
+Index: README.md
+===================================================================
+diff --git a/README.md b/README.md
+deleted file mode 100644
+--- a/README.md	(revision fb1db30cdbf658a50657d02ea6f666d82f4c122a)
++++ /dev/null	(revision fb1db30cdbf658a50657d02ea6f666d82f4c122a)
+@@ -1,1 +0,0 @@
+-# z-log
+\ No newline at end of file
