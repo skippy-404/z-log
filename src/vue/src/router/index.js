@@ -3,10 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // 导入组件
 // 懒加载方式
-const Home = () => import('../views/Home.vue')
-const Login = () => import('../views/Login.vue')
-const Register = () => import('../views/Register.vue')
-const Publish = () => import('../views/Publish.vue')
+const Home = () => import('@/views/Home.vue')
+const Login = () => import('@/views/Login.vue')
+const Register = () => import('@/views/Register.vue')
+const Publish = () => import('@/views/Publish.vue')
 
 // 定义路由
 const routes = [
