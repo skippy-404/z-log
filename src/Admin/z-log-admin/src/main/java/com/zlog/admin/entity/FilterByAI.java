@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FilterByAI {
-    private String imageDescription; //分析图片
+    private String imageDescription; //分析图片的主要内容
     private String contentTheme; // 主题
     private String mainContent; //主体内容
 }
