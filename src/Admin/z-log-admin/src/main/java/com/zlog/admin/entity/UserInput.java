@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Service
 public class UserInput {
     private String content; // 文字内容
     private String image;  // 图片
