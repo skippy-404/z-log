@@ -36,7 +36,7 @@
           <el-button text type="primary">忘记密码?</el-button>
         </div>
         
-        <el-button type="danger" native-type="submit" :loading="loading" class="login-button">登录</el-button>
+        <el-button type="success" native-type="submit" :loading="loading" class="login-button">登录</el-button>
         
         <div class="register-link">
           还没有账号? <el-button text type="primary" @click="$router.push('/register')">立即注册</el-button>

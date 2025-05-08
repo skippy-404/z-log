@@ -196,7 +196,7 @@
         <div class="form-actions">
           <el-button @click="handleCancel">取消</el-button>
           <el-button type="info" @click="saveAsDraft">存为草稿</el-button>
-          <el-button type="danger" @click="handlePublish" :loading="submitting">发布</el-button>
+          <el-button type="success" @click="handlePublish" :loading="submitting">发布</el-button>
         </div>
       </el-form>
     </div>
