@@ -26,21 +26,20 @@ public class UserInputServiceImpl implements UserInputService {
     public String DeepSeekfilter(UserInput userInput) {
         String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
         String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1"; // 替换成你的 API Key
-
+        String UserInputContent = userInput.getContent();
         OkHttpClient client = new OkHttpClient();
         // 1. 构造 JSON 请求体（DeepSeek API 格式）
-        String jsonBody = """
+        String jsonBody = String.format("""
                 {
                     "model": "deepseek-chat",
                     "messages": [
                         {
                             "role": "user",
-                            "content": "你好，介绍一下你自己"
+                            "content": "%s /n这是用户想要发布小红书的文字内容帮我分析，他的要点"
                         }
                     ],
-                    "temperature": 0.7
                 }
-                """;
+                """,UserInputContent);
 
         // 2. 创建 RequestBody
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -73,7 +72,7 @@ public class UserInputServiceImpl implements UserInputService {
     @Override
     public String OpenAIfliter(UserInput userInput) {
         String OPENAI_API_URL = "https://api.openai-hub.com";
-        String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad}";
+        String API_KEY = "sk-0PyW2HPVPe3S8WEgYIwqwHUPaXduOKEyYAdJuyDIJ7B2v8V6";
         String imageUrl = userInput.getImage_url();
         OkHttpClient client = new OkHttpClient();
         // 1. 构造 JSON 请求体（DeepSeek API 格式）
@@ -92,7 +91,6 @@ public class UserInputServiceImpl implements UserInputService {
                            }
                         }
                     ],
-                    "temperature": 0.7
                 }
                 """, imageUrl);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
