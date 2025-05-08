@@ -135,11 +135,25 @@
             
             <!-- 权限设置 -->
             <el-form-item label="权限设置">
-              <el-radio-group v-model="publishForm.permission">
-                <el-radio :label="'public'">公开</el-radio>
-                <el-radio :label="'friends'">仅关注者可见</el-radio>
-                <el-radio :label="'private'">仅自己可见</el-radio>
-              </el-radio-group>
+              <el-select
+                v-model="publishForm.permission"
+                placeholder="选择可见权限"
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="item in permissionOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                  <div class="permission-option">
+                    <el-icon class="permission-icon">
+                      <component :is="item.icon"></component>
+                    </el-icon>
+                    <span>{{ item.label }}</span>
+                  </div>
+                </el-option>
+              </el-select>
             </el-form-item>
           </div>
         </div>
@@ -230,6 +244,13 @@ const topicOptions = [
   { value: '游戏', label: '游戏' },
   { value: '健身', label: '健身' },
   { value: '宠物', label: '宠物' }
+]
+
+// 权限选项
+const permissionOptions = [
+  { value: 'public', label: '全部可见', icon: 'View' },
+  { value: 'friends', label: '粉丝可见', icon: 'User' },
+  { value: 'private', label: '仅自己可见', icon: 'Lock' }
 ]
 
 // 表单验证规则
@@ -580,5 +601,17 @@ const handlePublish = async () => {
 :deep(.el-upload__tip) {
   font-size: $font-size-small;
   color: $text-light;
+}
+
+.permission-option {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.permission-icon {
+  margin-right: 8px;
+  font-size: $font-size-medium;
+  color: $primary-color;
 }
 </style>
