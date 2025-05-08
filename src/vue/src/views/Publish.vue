@@ -13,96 +13,107 @@
         label-position="top"
         class="publish-form"
       >
-        <!-- 标题 -->
-        <el-form-item label="标题" prop="title">
-          <el-input 
-            v-model="publishForm.title" 
-            placeholder="请输入标题（2-50个字符）" 
-            maxlength="50"
-            show-word-limit
-          ></el-input>
-        </el-form-item>
-        
-        <!-- 上传图片 -->
-        <el-form-item label="添加图片" prop="images">
-          <el-upload
-            v-model:file-list="fileList"
-            action="#"
-            list-type="picture-card"
-            :auto-upload="false"
-            multiple
-            :limit="9"
-            accept="image/*"
-            :on-preview="handlePreview"
-            :on-remove="handleRemove"
-            :on-exceed="handleExceed"
-            :before-upload="beforeUpload"
-          >
-            <el-icon><Plus /></el-icon>
-            <template #tip>
-              <div class="el-upload__tip">
-                建议上传图片比例为4:3，JPG/PNG格式，大小不超过10MB
-              </div>
-            </template>
-          </el-upload>
+        <div class="form-layout">
+          <!-- 左侧内容区 -->
+          <div class="form-left">
+            <!-- 标题 -->
+            <el-form-item label="标题" prop="title">
+              <el-input 
+                v-model="publishForm.title" 
+                placeholder="请输入标题（2-50个字符）" 
+                maxlength="50"
+                show-word-limit
+              ></el-input>
+            </el-form-item>
+            
+            <!-- 上传图片 -->
+            <el-form-item label="添加图片" prop="images">
+              <el-upload
+                v-model:file-list="fileList"
+                action="#"
+                list-type="picture-card"
+                :auto-upload="false"
+                multiple
+                :limit="9"
+                accept="image/*"
+                :on-preview="handlePreview"
+                :on-remove="handleRemove"
+                :on-exceed="handleExceed"
+                :before-upload="beforeUpload"
+              >
+                <el-icon><Plus /></el-icon>
+                <template #tip>
+                  <div class="el-upload__tip">
+                    建议上传图片比例为4:3，JPG/PNG格式，大小不超过10MB
+                  </div>
+                </template>
+              </el-upload>
+              
+              <!-- 图片预览对话框 -->
+              <el-dialog v-model="dialogVisible" width="50%">
+                <img w-full :src="dialogImageUrl" alt="Preview Image" />
+              </el-dialog>
+            </el-form-item>
+            
+            <!-- 正文内容 -->
+            <el-form-item label="正文内容" prop="content">
+              <el-input
+                v-model="publishForm.content"
+                type="textarea"
+                :rows="6"
+                placeholder="请输入正文内容（10-2000个字符）"
+                maxlength="2000"
+                show-word-limit
+              ></el-input>
+            </el-form-item>
+          </div>
           
-          <!-- 图片预览对话框 -->
-          <el-dialog v-model="dialogVisible" width="50%">
-            <img w-full :src="dialogImageUrl" alt="Preview Image" />
-          </el-dialog>
-        </el-form-item>
-        
-        <!-- 正文内容 -->
-        <el-form-item label="正文内容" prop="content">
-          <el-input
-            v-model="publishForm.content"
-            type="textarea"
-            :rows="6"
-            placeholder="请输入正文内容（10-2000个字符）"
-            maxlength="2000"
-            show-word-limit
-          ></el-input>
-        </el-form-item>
-        
-        <!-- 所属话题 -->
-        <el-form-item label="所属话题" prop="topics">
-          <el-select
-            v-model="publishForm.topics"
-            multiple
-            filterable
-            allow-create
-            default-first-option
-            placeholder="选择或创建话题（最多3个）"
-            :max-collapse-tags="3"
-            :multiple-limit="3"
-            style="width: 100%;"
-          >
-            <el-option
-              v-for="item in topicOptions"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-        
-        <!-- 位置信息 -->
-        <el-form-item label="位置信息">
-          <el-input
-            v-model="publishForm.location"
-            placeholder="添加位置信息（可选）"
-            prefix-icon="Location"
-          ></el-input>
-        </el-form-item>
-        
-        <!-- 权限设置 -->
-        <el-form-item label="权限设置">
-          <el-radio-group v-model="publishForm.permission">
-            <el-radio :label="'public'">公开</el-radio>
-            <el-radio :label="'friends'">仅关注者可见</el-radio>
-            <el-radio :label="'private'">仅自己可见</el-radio>
-          </el-radio-group>
-        </el-form-item>
+          <!-- 分隔线 -->
+          <div class="form-divider"></div>
+          
+          <!-- 右侧附加内容区 -->
+          <div class="form-right">
+            <!-- 所属话题 -->
+            <el-form-item label="所属话题" prop="topics">
+              <el-select
+                v-model="publishForm.topics"
+                multiple
+                filterable
+                allow-create
+                default-first-option
+                placeholder="选择或创建话题（最多3个）"
+                :max-collapse-tags="3"
+                :multiple-limit="3"
+                style="width: 100%;"
+              >
+                <el-option
+                  v-for="item in topicOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
+            </el-form-item>
+            
+            <!-- 位置信息 -->
+            <el-form-item label="位置信息">
+              <el-input
+                v-model="publishForm.location"
+                placeholder="添加位置信息（可选）"
+                prefix-icon="Location"
+              ></el-input>
+            </el-form-item>
+            
+            <!-- 权限设置 -->
+            <el-form-item label="权限设置">
+              <el-radio-group v-model="publishForm.permission">
+                <el-radio :label="'public'">公开</el-radio>
+                <el-radio :label="'friends'">仅关注者可见</el-radio>
+                <el-radio :label="'private'">仅自己可见</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
+        </div>
         
         <!-- 操作按钮 -->
         <div class="form-actions">
@@ -250,7 +261,7 @@ const handlePublish = async () => {
 @import '@/assets/styles/variables.scss';
 
 .publish-container {
-  max-width: 800px;
+  max-width: 1150px;
   margin: 0 auto;
   padding: 20px;
   background-color: $bg-light;
@@ -291,6 +302,46 @@ const handlePublish = async () => {
   :deep(.el-form-item__label) {
     font-size: $font-size-medium;
     color: $text-secondary;
+  }
+}
+
+.form-layout {
+  display: flex;
+  margin-bottom: $spacing-large;
+  
+  @media (max-width: $breakpoint-md) {
+    flex-direction: column;
+  }
+}
+
+.form-left {
+  flex: 2;
+  padding-right: $spacing-large;
+  
+  @media (max-width: $breakpoint-md) {
+    padding-right: 0;
+    margin-bottom: $spacing-large;
+  }
+}
+
+.form-divider {
+  width: 1px;
+  background-color: $border-light;
+  margin: 0 $spacing-large;
+  
+  @media (max-width: $breakpoint-md) {
+    width: 100%;
+    height: 1px;
+    margin: $spacing-medium 0;
+  }
+}
+
+.form-right {
+  flex: 1;
+  padding-left: $spacing-large;
+  
+  @media (max-width: $breakpoint-md) {
+    padding-left: 0;
   }
 }
 
