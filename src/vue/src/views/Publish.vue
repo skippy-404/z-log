@@ -1,8 +1,9 @@
 <template>
   <app-layout>
     <div class="publish-container">
-      <div class="inspiration-btn">
+      <div class="utility-buttons">
         <el-button type="primary" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
+        <el-button type="success" size="small" icon="ChatDotRound" @click="showAIGenerateDialog">AI一键生成</el-button>
       </div>
       
       <!-- 灵感闪现对话框 -->
@@ -26,6 +27,42 @@
           <span class="dialog-footer">
             <el-button @click="inspirationDialogVisible = false">关闭</el-button>
             <el-button type="primary" @click="applyInspiration">随机灵感</el-button>
+          </span>
+        </template>
+      </el-dialog>
+      
+      <!-- AI一键生成对话框 -->
+      <el-dialog
+        v-model="aiGenerateDialogVisible"
+        title="AI一键生成"
+        width="500px"
+      >
+        <div class="ai-generate-content">
+          <p class="ai-generate-tip">请选择你想生成的内容类型：</p>
+          <el-form :model="aiGenerateForm" label-position="top">
+            <el-form-item label="内容类型">
+              <el-select v-model="aiGenerateForm.type" placeholder="选择内容类型" style="width: 100%;">
+                <el-option label="旅行游记" value="travel" />
+                <el-option label="美食分享" value="food" />
+                <el-option label="读书心得" value="book" />
+                <el-option label="影视剧评" value="movie" />
+                <el-option label="数码评测" value="tech" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="关键词">
+              <el-input v-model="aiGenerateForm.keyword" placeholder="输入相关关键词（选填）" />
+            </el-form-item>
+          </el-form>
+          
+          <div v-if="aiGeneratingStatus" class="ai-generating-status">
+            <el-progress type="circle" :percentage="aiGeneratingProgress" :status="aiGeneratingProgress === 100 ? 'success' : ''" />
+            <p>{{ aiGeneratingMessage }}</p>
+          </div>
+        </div>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="aiGenerateDialogVisible = false">关闭</el-button>
+            <el-button type="success" @click="generateContent" :loading="aiGeneratingStatus">生成内容</el-button>
           </span>
         </template>
       </el-dialog>
@@ -71,16 +108,13 @@
                 :before-upload="beforeUpload"
               >
                 <el-icon><Plus /></el-icon>
-                <template #tip>
-                  <div class="el-upload__tip">
-                    建议上传图片比例为4:3，JPG/PNG格式，大小不超过10MB
-                  </div>
-                </template>
               </el-upload>
               
               <!-- 图片预览对话框 -->
-              <el-dialog v-model="dialogVisible" width="50%">
-                <img w-full :src="dialogImageUrl" alt="Preview Image" />
+              <el-dialog v-model="dialogVisible" width="50%" class="image-preview-dialog">
+                <div class="image-preview-container">
+                  <img :src="dialogImageUrl" alt="Preview Image" class="preview-image" />
+                </div>
               </el-dialog>
             </el-form-item>
             
@@ -195,9 +229,94 @@ const inspirationList = [
   "分享你的健身心得或健康饮食小贴士"
 ]
 
+// AI一键生成相关
+const aiGenerateDialogVisible = ref(false)
+const aiGeneratingStatus = ref(false)
+const aiGeneratingProgress = ref(0)
+const aiGeneratingMessage = ref('正在生成内容...')
+const aiGenerateForm = reactive({
+  type: 'travel',
+  keyword: ''
+})
+
 // 显示灵感对话框
 const showInspirationDialog = () => {
   inspirationDialogVisible.value = true
+}
+
+// 显示AI生成对话框
+const showAIGenerateDialog = () => {
+  aiGenerateDialogVisible.value = true
+}
+
+// AI生成内容
+const generateContent = () => {
+  aiGeneratingStatus.value = true
+  aiGeneratingProgress.value = 0
+  aiGeneratingMessage.value = '正在生成内容...'
+  
+  // 模拟生成进度
+  const timer = setInterval(() => {
+    aiGeneratingProgress.value += 10
+    if (aiGeneratingProgress.value >= 100) {
+      clearInterval(timer)
+      aiGeneratingMessage.value = '内容生成完成!'
+      
+      // 根据不同类型生成不同内容
+      let generatedTitle = ''
+      let generatedContent = ''
+      
+      switch (aiGenerateForm.type) {
+        case 'travel':
+          generatedTitle = aiGenerateForm.keyword ? `${aiGenerateForm.keyword}之旅` : '我的精彩旅行记录'
+          generatedContent = '这是一次难忘的旅行体验，沿途的风景如画，人文风情独特。当地的美食令人回味无穷，特别是...[AI生成的旅行内容]'
+          break
+        case 'food':
+          generatedTitle = aiGenerateForm.keyword ? `品尝${aiGenerateForm.keyword}的美味体验` : '舌尖上的美食探索'
+          generatedContent = '这道美食的色香味俱全，口感丰富多层次。制作过程并不复杂，但需要注意火候的掌控...[AI生成的美食内容]'
+          break
+        case 'book':
+          generatedTitle = aiGenerateForm.keyword ? `《${aiGenerateForm.keyword}》读后感` : '近期阅读心得分享'
+          generatedContent = '这本书给我带来了全新的视角和思考，作者通过细腻的笔触描绘了...[AI生成的读书心得]'
+          break
+        case 'movie':
+          generatedTitle = aiGenerateForm.keyword ? `《${aiGenerateForm.keyword}》观后感` : '近期观影推荐'
+          generatedContent = '这部影片的剧情设计精妙，演员表演到位，特别是在情感表达方面...[AI生成的影评内容]'
+          break
+        case 'tech':
+          generatedTitle = aiGenerateForm.keyword ? `${aiGenerateForm.keyword}深度评测` : '数码新品体验报告'
+          generatedContent = '这款产品的设计和用户体验做得相当出色，功能丰富且实用。在性能方面...[AI生成的评测内容]'
+          break
+        default:
+          generatedTitle = '我的精彩分享'
+          generatedContent = '这是AI帮我生成的精彩内容...[AI生成的通用内容]'
+      }
+      
+      // 应用生成的内容
+      publishForm.title = generatedTitle
+      publishForm.content = generatedContent
+      
+      // 随机选择相关话题
+      const topicMap = {
+        travel: '旅行',
+        food: '美食',
+        book: '读书',
+        movie: '电影',
+        tech: '数码'
+      }
+      publishForm.topics = [topicMap[aiGenerateForm.type] || topicOptions[0].value]
+      
+      // 延迟关闭对话框
+      setTimeout(() => {
+        aiGenerateDialogVisible.value = false
+        aiGeneratingStatus.value = false
+        ElMessage({
+          message: 'AI内容生成成功',
+          type: 'success'
+        })
+      }, 1000)
+    }
+  }, 300)
 }
 
 // 选择特定灵感
@@ -365,29 +484,53 @@ const handlePublish = async () => {
   }
 }
 
-.inspiration-btn {
+.utility-buttons {
   position: absolute;
   top: 20px;
   left: 25px;
   z-index: 10;
+  display: flex;
+  gap: 10px;
   
   :deep(.el-button) {
-    background-color: $primary-color;
-    border-color: $primary-color;
-    font-size: $font-size-small;
-    padding: 18px 15px;
-    border-radius: 18px;
     box-shadow: $box-shadow;
+    border-radius: 18px;
+    padding: 18px 15px;
+    font-size: $font-size-small;
     
     &:hover, &:focus {
-      background-color: darken($primary-color, 10%);
-      border-color: darken($primary-color, 10%);
+      transform: translateY(-2px);
+      transition: transform 0.3s ease;
     }
   }
 }
 
 .inspiration-content {
   padding: 10px;
+}
+
+.ai-generate-content {
+  padding: 10px;
+}
+
+.ai-generate-tip {
+  font-size: $font-size-medium;
+  color: $text-secondary;
+  margin-bottom: 20px;
+}
+
+.ai-generating-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+  padding: 20px 0;
+  
+  p {
+    margin-top: 15px;
+    color: $text-secondary;
+    font-size: $font-size-medium;
+  }
 }
 
 .inspiration-tip {
@@ -613,5 +756,20 @@ const handlePublish = async () => {
   margin-right: 8px;
   font-size: $font-size-medium;
   color: $primary-color;
+}
+
+.image-preview-dialog {
+  .image-preview-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+  }
+
+  .preview-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 }
 </style>
