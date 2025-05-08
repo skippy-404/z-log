@@ -16,7 +16,7 @@
           <template #description>
             <span>登录后查看更多精彩内容</span>
           </template>
-          <el-button type="danger" @click="$router.push('/login')">立即登录</el-button>
+          <el-button  @click="$router.push('/login')">立即登录</el-button>
         </el-empty>
         
         <div v-else class="placeholder-content">

@@ -44,7 +44,7 @@
             <!-- 发布按钮 -->
             <el-menu-item index="2" class="publish-item">
               <router-link to="/publish" class="publish-btn">
-                <el-button type="danger" round>
+                <el-button type="" round>
                   <el-icon><Plus /></el-icon>发布
                 </el-button>
               </router-link>
@@ -65,7 +65,8 @@
             <template v-else>
               <el-menu-item index="4" class="login-item">
                 <router-link to="/login">
-                  <el-button type="danger" plain>登录</el-button>
+                  <!-- 修改此处 -->
+                  <el-button type="" plain :style="{ color: '$text-secondary', backgroundColor: '$primary-color' }">登录</el-button>
                 </router-link>
               </el-menu-item>
               <el-menu-item index="5" class="register-item">
@@ -281,4 +282,4 @@ const handleLogout = () => {
     padding: 0 20px;
   }
 }
-</style> 
+</style>

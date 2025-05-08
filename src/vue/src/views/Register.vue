@@ -69,7 +69,7 @@
         </el-form-item>
         
         <el-button 
-          type="danger" 
+          type="primary" 
           native-type="submit" 
           :loading="loading" 
           :disabled="!agreeTerms"
