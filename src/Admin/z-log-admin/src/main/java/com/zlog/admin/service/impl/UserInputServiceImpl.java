@@ -16,8 +16,14 @@ import java.io.IOException;
 @Service
 public class UserInputServiceImpl implements UserInputService {
     @Override
-    public FilterByAI filter(UserInput userInput) {
-        FilterByAI filterByAI;
+    public FilterByAI totalFilter(UserInput userInput) {
+        String ContextAnalise = DeepSeekfilter(userInput);
+        String ImageDescription = OpenAIfliter(userInput);
+        String BlogTheme = DeepSeekfilter(ContextAnalise,ImageDescription);
+        return new FilterByAI(ImageDescription,ContextAnalise,BlogTheme);
+    }
+    @Override
+    public String DeepSeekfilter(UserInput userInput) {
         String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
         String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1"; // 替换成你的 API Key
 
@@ -61,7 +67,18 @@ public class UserInputServiceImpl implements UserInputService {
         } catch (IOException e) {
             System.err.println("请求出错: " + e.getMessage());
         }
-        return new FilterByAI("123", "contentTheme", "mainContent");
+        return "deepseek_out";
 
     }
+    @Override
+    public String OpenAIfliter(UserInput userInput) {
+        String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+        String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad}";
+        return "openAi_outputs";
+    }
+    @Override
+    public String DeepSeekfilter(String DeepSeekOut,String OpenAIOut) {
+        return "deepseek_outputs";
+    }
+
 }
