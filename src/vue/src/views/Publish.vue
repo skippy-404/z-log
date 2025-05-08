@@ -1,6 +1,35 @@
 <template>
   <app-layout>
     <div class="publish-container">
+      <div class="inspiration-btn">
+        <el-button type="primary" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
+      </div>
+      
+      <!-- 灵感闪现对话框 -->
+      <el-dialog
+        v-model="inspirationDialogVisible"
+        title="灵感闪现"
+        width="500px"
+      >
+        <div class="inspiration-content">
+          <p class="inspiration-tip">以下是一些创作灵感，希望能够帮助到你：</p>
+          <div class="inspiration-list">
+            <div class="inspiration-item" v-for="(item, index) in inspirationList" :key="index" @click="selectInspiration(item)">
+              <div class="inspiration-icon">
+                <el-icon><BulbFilled /></el-icon>
+              </div>
+              <div class="inspiration-text">{{ item }}</div>
+            </div>
+          </div>
+        </div>
+        <template #footer>
+          <span class="dialog-footer">
+            <el-button @click="inspirationDialogVisible = false">关闭</el-button>
+            <el-button type="primary" @click="applyInspiration">随机灵感</el-button>
+          </span>
+        </template>
+      </el-dialog>
+      
       <div class="publish-header">
         <h2>发布笔记</h2>
         <p>分享你的精彩瞬间和心得体会</p>
@@ -139,6 +168,47 @@ const dialogImageUrl = ref('')
 const dialogVisible = ref(false)
 const submitting = ref(false)
 
+// 灵感闪现相关
+const inspirationDialogVisible = ref(false)
+const inspirationList = [
+  "分享一下你最近的旅行中最令你难忘的风景或经历",
+  "介绍一道你最拿手的美食和它背后的故事",
+  "分享一本近期阅读的好书和它给你带来的启发",
+  "记录一次有趣的社交活动或聚会",
+  "分享一个生活小技巧，让日常更加便利",
+  "记录一次购物体验或分享你最近的心水好物",
+  "探讨一部你最近看过的电影或剧集",
+  "分享你的健身心得或健康饮食小贴士"
+]
+
+// 显示灵感对话框
+const showInspirationDialog = () => {
+  inspirationDialogVisible.value = true
+}
+
+// 选择特定灵感
+const selectInspiration = (inspiration) => {
+  publishForm.title = '灵感：' + inspiration.substring(0, 10) + '...'
+  publishForm.content = inspiration
+  inspirationDialogVisible.value = false
+  ElMessage({
+    message: '已应用灵感到内容中',
+    type: 'success'
+  })
+}
+
+// 应用随机灵感
+const applyInspiration = () => {
+  const randomInspiration = inspirationList[Math.floor(Math.random() * inspirationList.length)]
+  publishForm.title = '灵感：' + randomInspiration.substring(0, 10) + '...'
+  publishForm.content = randomInspiration
+  inspirationDialogVisible.value = false
+  ElMessage({
+    message: '已应用随机灵感到内容中',
+    type: 'success'
+  })
+}
+
 // 表单数据
 const publishForm = reactive({
   title: '',
@@ -267,10 +337,89 @@ const handlePublish = async () => {
   background-color: $bg-light;
   border-radius: $border-radius;
   box-shadow: $box-shadow;
+  position: relative;
   
   @media (max-width: $breakpoint-sm) {
     padding: 15px;
   }
+}
+
+.inspiration-btn {
+  position: absolute;
+  top: 20px;
+  left: 25px;
+  z-index: 10;
+  
+  :deep(.el-button) {
+    background-color: $primary-color;
+    border-color: $primary-color;
+    font-size: $font-size-small;
+    padding: 18px 15px;
+    border-radius: 18px;
+    box-shadow: $box-shadow;
+    
+    &:hover, &:focus {
+      background-color: darken($primary-color, 10%);
+      border-color: darken($primary-color, 10%);
+    }
+  }
+}
+
+.inspiration-content {
+  padding: 10px;
+}
+
+.inspiration-tip {
+  font-size: $font-size-medium;
+  color: $text-secondary;
+  margin-bottom: 20px;
+}
+
+.inspiration-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.inspiration-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 10px 15px;
+  background-color: $secondary-color;
+  border-radius: $border-radius-small;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-light;
+  }
+}
+
+.inspiration-icon {
+  margin-right: 10px;
+  color: $primary-color;
+  font-size: $font-size-large;
+}
+
+.inspiration-text {
+  color: $text-primary;
+  font-size: $font-size-normal;
+  line-height: 1.5;
+}
+
+:deep(.el-dialog__header) {
+  border-bottom: 1px solid $border-light;
+  padding: 15px 20px;
+}
+
+:deep(.el-dialog__body) {
+  padding: 20px;
+}
+
+:deep(.el-dialog__footer) {
+  border-top: 1px solid $border-light;
+  padding: 15px 20px;
 }
 
 .publish-header {
