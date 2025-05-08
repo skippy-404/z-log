@@ -2,8 +2,8 @@
   <app-layout>
     <div class="publish-container">
       <div class="utility-buttons">
-        <el-button type="primary" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
-        <el-button type="success" size="small" icon="ChatDotRound" @click="showAIGenerateDialog">AI一键生成</el-button>
+        <el-button type="info" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
+        <el-button type="primary" size="small" icon="ChatDotRound" @click="showAIGenerateDialog">AI一键生成</el-button>
       </div>
       
       <!-- 灵感闪现对话框 -->
@@ -62,7 +62,7 @@
         <template #footer>
           <span class="dialog-footer">
             <el-button @click="aiGenerateDialogVisible = false">关闭</el-button>
-            <el-button type="success" @click="generateContent" :loading="aiGeneratingStatus">生成内容</el-button>
+            <el-button type="primary" @click="generateContent" :loading="aiGeneratingStatus" style="background-color: #7db0e8; border-color: #7db0e8;">生成内容</el-button>
           </span>
         </template>
       </el-dialog>
@@ -501,6 +501,26 @@ const handlePublish = async () => {
     &:hover, &:focus {
       transform: translateY(-2px);
       transition: transform 0.3s ease;
+    }
+    
+    &:first-child {
+      background-color: #a4b3cf;
+      border-color: #a4b3cf;
+      
+      &:hover {
+        background-color: darken(#a4b3cf, 10%);
+        border-color: darken(#a4b3cf, 10%);
+      }
+    }
+    
+    &:last-child {
+      background-color: #7db0e8;
+      border-color: #7db0e8;
+      
+      &:hover {
+        background-color: darken(#7db0e8, 10%);
+        border-color: darken(#7db0e8, 10%);
+      }
     }
   }
 }
