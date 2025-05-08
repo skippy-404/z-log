@@ -21,6 +21,17 @@ public class UserInputController {
         FilterByAI filterByAI= userInputService.totalFilter(userInput);
         return ResponseEntity.success(filterByAI);
     }
-
+    //测试
+    @PostMapping("/deepSeek")
+    public ResponseEntity deepSeek(@RequestBody  UserInput userInput){
+        String deepSeekfilter= userInputService.DeepSeekfilter(userInput);
+        return ResponseEntity.success(deepSeekfilter);
+    }
+    //测试
+    @PostMapping("/openAI")
+    public ResponseEntity openAI(@RequestBody  UserInput userInput){
+        String openAIfliter= userInputService.OpenAIfliter(userInput);
+        return ResponseEntity.success(openAIfliter);
+    }
 
 }

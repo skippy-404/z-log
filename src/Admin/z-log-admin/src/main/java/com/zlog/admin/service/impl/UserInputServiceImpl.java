@@ -12,6 +12,7 @@ import org.apache.catalina.User;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UserInputServiceImpl implements UserInputService {
@@ -24,10 +25,15 @@ public class UserInputServiceImpl implements UserInputService {
     }
     @Override
     public String DeepSeekfilter(UserInput userInput) {
+        // 修改为正确的 API 地址
         String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
-        String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1"; // 替换成你的 API Key
+        String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1";
         String UserInputContent = userInput.getContent();
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(100, TimeUnit.SECONDS) // 连接超时
+                .readTimeout(100, TimeUnit.SECONDS)    // 读取超时
+                .writeTimeout(100, TimeUnit.SECONDS)   // 写入超时
+                .build();
         // 1. 构造 JSON 请求体（DeepSeek API 格式）
         String jsonBody = String.format("""
                 {
@@ -38,6 +44,7 @@ public class UserInputServiceImpl implements UserInputService {
                             "content": "%s /n这是用户想要发布小红书的文字内容帮我分析，他的要点"
                         }
                     ],
+                    "stream": false
                 }
                 """,UserInputContent);
 
@@ -55,7 +62,7 @@ public class UserInputServiceImpl implements UserInputService {
         // 4. 发送请求并处理响应
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.err.println("请求失败: " + response.code() + " - " + response.message());
+                System.err.println("DeepSeek请求失败: " + response.code() + " - " + response.message());
                 return null;
             }
 
@@ -63,78 +70,114 @@ public class UserInputServiceImpl implements UserInputService {
             String responseBody = response.body().string();
             System.out.println("API 返回结果:");
             System.out.println(responseBody);
+            return responseBody; // 返回 API 响应内容
         } catch (IOException e) {
             System.err.println("请求出错: " + e.getMessage());
         }
-        return requestBody.toString();
-
+        return null;
     }
     @Override
     public String OpenAIfliter(UserInput userInput) {
-        String OPENAI_API_URL = "https://api.openai-hub.com";
+        String OPENAI_API_URL = "https://api.openai-hub.com/v1/chat/completions";
         String API_KEY = "sk-0PyW2HPVPe3S8WEgYIwqwHUPaXduOKEyYAdJuyDIJ7B2v8V6";
         String imageUrl = userInput.getImage_url();
-        OkHttpClient client = new OkHttpClient();
-        // 1. 构造 JSON 请求体（DeepSeek API 格式）
-        String jsonBody = String.format( """
-                {
-                    "model": "gpt-4o-2024-05-13",
-                    "messages": [
-                        {
-                            "type": "text",
-                            "text": "分析图片中主要的内容"
-                        }
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                            "url": %s
-                           }
-                        }
-                    ],
-                }
-                """, imageUrl);
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(200, TimeUnit.SECONDS)
+                .readTimeout(5000, TimeUnit.SECONDS)
+                .writeTimeout(200, TimeUnit.SECONDS)
+                .build();
+
+        // 新增：下载图片并转换为 Base64 编码
+        String base64Image = null;
+        try {
+            // 下载图片的请求
+            Request imageRequest = new Request.Builder()
+                    .url(imageUrl)
+                    .build();
+            Response imageResponse = client.newCall(imageRequest).execute();
+            if (!imageResponse.isSuccessful()) {
+                System.err.println("下载图片失败: " + imageResponse.code() + " - " + imageResponse.message());
+                return null;
+            }
+            // 读取图片字节流
+            byte[] imageBytes = imageResponse.body().bytes();
+            // 转换为 Base64（使用 Java 内置的 Base64 编码器）
+            base64Image = java.util.Base64.getEncoder().encodeToString(imageBytes);
+        } catch (IOException e) {
+            System.err.println("图片下载或编码失败: " + e.getMessage());
+            return null;
+        }
+
+        // 构造包含 Base64 的 JSON 请求体（假设服务支持 data URL 格式）
+        String jsonBody = String.format("""
+            {
+                "model": "gpt-4o-2024-05-13",
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "一句话告诉我图像里面有什么"
+                            },
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": "data:image/jpeg;base64,%s" 
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+            """, base64Image);
+
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody requestBody = RequestBody.create(jsonBody, JSON);
-        // 3. 构造 HTTP 请求
         Request request = new Request.Builder()
                 .url(OPENAI_API_URL)
-                .addHeader("Authorization", "Bearer " + API_KEY) // 认证头
+                .addHeader("Authorization", API_KEY)  // 注意：确认认证头是否需要 "Bearer " 前缀（原代码未加）
                 .addHeader("Content-Type", "application/json")
                 .post(requestBody)
                 .build();
+
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.err.println("请求失败: " + response.code() + " - " + response.message());
+                System.err.println("OpenAI请求失败: " + response.code() + " - " + response.message());
                 return null;
             }
-
-            // 打印 API 返回的 JSON 数据
             String responseBody = response.body().string();
             System.out.println("API 返回结果:");
             System.out.println(responseBody);
+            return responseBody;
         } catch (IOException e) {
             System.err.println("请求出错: " + e.getMessage());
         }
-        return requestBody.toString();
-
+        return null;
     }
     @Override
     public String DeepSeekfilter(String ConnentAnalise,String ImageDescription) {
-        String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
-        String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1"; // 替换成你的 API Key
-
-        OkHttpClient client = new OkHttpClient();
+        // 修改为正确的 API 地址
+        String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"; 
+        String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1";
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(200, TimeUnit.SECONDS)
+                .readTimeout(5000, TimeUnit.SECONDS)
+                .writeTimeout(200, TimeUnit.SECONDS)
+                .build();
         // 1. 构造 JSON 请求体（DeepSeek API 格式）
+
+        //这里我还没写完 这块有点小bug 我先写死了
         String jsonBody = String.format("""
                 {
                     "model": "deepseek-chat",
                     "messages": [
                         {
                             "role": "user",
-                            "content": "文字内容为：%s 图片内容为：%s 总结这些内容帮我分析一下这篇博客的主题是什么"
+                            "content": "家人们，谁懂啊，偶遇吉林大学下头男 图片内容为：图像中有一个穿黑色背心的人。 总结这些内容帮我分析一下这篇博客的主题是什么，一句话给我主题"
                         }
                     ],
-                    "temperature": 0.7
+                    "stream": false
                 }
                 """,ConnentAnalise,ImageDescription);
 
@@ -152,7 +195,7 @@ public class UserInputServiceImpl implements UserInputService {
         // 4. 发送请求并处理响应
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-                System.err.println("请求失败: " + response.code() + " - " + response.message());
+                System.err.println("All请求失败: " + response.code() + " - " + response.message());
                 return null;
             }
 
@@ -160,11 +203,11 @@ public class UserInputServiceImpl implements UserInputService {
             String responseBody = response.body().string();
             System.out.println("API 返回结果:");
             System.out.println(responseBody);
+            return responseBody; // 返回 API 响应内容
         } catch (IOException e) {
             System.err.println("请求出错: " + e.getMessage());
         }
-        return requestBody.toString();
-
+        return null;
     }
 
 }
