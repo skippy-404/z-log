@@ -1,3 +1,5 @@
+/* 全局样式已移至App.vue，这里保留为空或作为补充 */
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -24,10 +26,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  width: 100%;
+  min-width: 100%;
 }
 
 h1 {
@@ -59,12 +60,16 @@ button:focus-visible {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  min-width: 100%;
+  margin: 0;
+  padding: 0;
+  max-width: none;
   text-align: center;
 }
 
+/* 以下样式在暗模式下可能会覆盖App.vue中的样式，暂时注释掉 */
+/*
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -77,3 +82,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+*/

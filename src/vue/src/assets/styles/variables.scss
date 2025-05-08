@@ -1,0 +1,55 @@
+// 颜色变量
+$primary-color: #FF2442; // 小红书主色
+$secondary-color: #FFEEF1; // 浅粉色背景
+$success-color: #67C23A;
+$warning-color: #E6A23C;
+$danger-color: #F56C6C;
+$info-color: #909399;
+
+// 文本颜色
+$text-primary: #333333;
+$text-secondary: #666666;
+$text-light: #999999;
+
+// 背景颜色
+$bg-color: #F6F6F6;
+$bg-light: #FFFFFF;
+
+// 边框颜色
+$border-color: #DCDFE6;
+$border-light: #EBEEF5;
+
+// 字体大小
+$font-size-mini: 12px;
+$font-size-small: 13px;
+$font-size-normal: 14px;
+$font-size-medium: 16px;
+$font-size-large: 18px;
+$font-size-xlarge: 20px;
+$font-size-xxlarge: 22px;
+
+// 圆角
+$border-radius-small: 4px;
+$border-radius: 8px;
+$border-radius-large: 12px;
+
+// 间距
+$spacing-mini: 4px;
+$spacing-small: 8px;
+$spacing-normal: 12px;
+$spacing-medium: 16px;
+$spacing-large: 20px;
+$spacing-xlarge: 24px;
+$spacing-xxlarge: 32px;
+
+// 阴影
+$box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+$box-shadow-light: 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+$box-shadow-dark: 0 4px 16px 0 rgba(0, 0, 0, 0.15);
+
+// 断点
+$breakpoint-xs: 576px;
+$breakpoint-sm: 768px;
+$breakpoint-md: 992px;
+$breakpoint-lg: 1200px;
+$breakpoint-xl: 1600px; 
