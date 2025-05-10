@@ -1,77 +1,10 @@
 <template>
   <app-layout>
     <div class="publish-container">
-      <div class="utility-buttons">
-        <el-button type="info" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
-        <el-button type="primary" size="small" icon="ChatDotRound" @click="showAIGenerateDialog">AI一键生成</el-button>
-      </div>
-      
-      <!-- 灵感闪现对话框 -->
-      <el-dialog
-        v-model="inspirationDialogVisible"
-        title="灵感闪现"
-        width="500px"
-      >
-        <div class="inspiration-content">
-          <p class="inspiration-tip">以下是一些创作灵感，希望能够帮助到你：</p>
-          <div class="inspiration-list">
-            <div class="inspiration-item" v-for="(item, index) in inspirationList" :key="index" @click="selectInspiration(item)">
-              <div class="inspiration-icon">
-                <el-icon><BulbFilled /></el-icon>
-              </div>
-              <div class="inspiration-text">{{ item }}</div>
-            </div>
-          </div>
-        </div>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="inspirationDialogVisible = false">关闭</el-button>
-            <el-button type="primary" @click="applyInspiration">随机灵感</el-button>
-          </span>
-        </template>
-      </el-dialog>
-      
-      <!-- AI一键生成对话框 -->
-      <el-dialog
-        v-model="aiGenerateDialogVisible"
-        title="AI一键生成"
-        width="500px"
-      >
-        <div class="ai-generate-content">
-          <p class="ai-generate-tip">请选择你想生成的内容类型：</p>
-          <el-form :model="aiGenerateForm" label-position="top">
-            <el-form-item label="内容类型">
-              <el-select v-model="aiGenerateForm.type" placeholder="选择内容类型" style="width: 100%;">
-                <el-option label="旅行游记" value="travel" />
-                <el-option label="美食分享" value="food" />
-                <el-option label="读书心得" value="book" />
-                <el-option label="影视剧评" value="movie" />
-                <el-option label="数码评测" value="tech" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="关键词">
-              <el-input v-model="aiGenerateForm.keyword" placeholder="输入相关关键词（选填）" />
-            </el-form-item>
-          </el-form>
-          
-          <div v-if="aiGeneratingStatus" class="ai-generating-status">
-            <el-progress type="circle" :percentage="aiGeneratingProgress" :status="aiGeneratingProgress === 100 ? 'success' : ''" />
-            <p>{{ aiGeneratingMessage }}</p>
-          </div>
-        </div>
-        <template #footer>
-          <span class="dialog-footer">
-            <el-button @click="aiGenerateDialogVisible = false">关闭</el-button>
-            <el-button type="primary" @click="generateContent" :loading="aiGeneratingStatus" style="background-color: #7db0e8; border-color: #7db0e8;">生成内容</el-button>
-          </span>
-        </template>
-      </el-dialog>
-      
       <div class="publish-header">
         <h2>发布笔记</h2>
         <p>分享你的精彩瞬间和心得体会</p>
       </div>
-      
       <el-form 
         ref="formRef"
         :model="publishForm" 
@@ -79,6 +12,71 @@
         label-position="top"
         class="publish-form"
       >
+        <div class="utility-buttons">
+          <el-button type="info" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
+          <el-button type="primary" size="small" icon="ChatDotRound" @click="showAIGenerateDialog">AI一键生成</el-button>
+        </div>
+        <!-- 灵感闪现对话框 -->
+        <el-dialog
+          v-model="inspirationDialogVisible"
+          title="灵感闪现"
+          width="500px"
+        >
+          <div class="inspiration-content">
+            <p class="inspiration-tip">以下是一些创作灵感，希望能够帮助到你：</p>
+            <div class="inspiration-list">
+              <div class="inspiration-item" v-for="(item, index) in inspirationList" :key="index" @click="selectInspiration(item)">
+                <div class="inspiration-icon">
+                  <el-icon><BulbFilled /></el-icon>
+                </div>
+                <div class="inspiration-text">{{ item }}</div>
+              </div>
+            </div>
+          </div>
+          <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="inspirationDialogVisible = false">关闭</el-button>
+              <el-button type="primary" @click="applyInspiration">随机灵感</el-button>
+            </span>
+          </template>
+        </el-dialog>
+        
+        <!-- AI一键生成对话框 -->
+        <el-dialog
+          v-model="aiGenerateDialogVisible"
+          title="AI一键生成"
+          width="500px"
+        >
+          <div class="ai-generate-content">
+            <p class="ai-generate-tip">请选择你想生成的内容类型：</p>
+            <el-form :model="aiGenerateForm" label-position="top">
+              <el-form-item label="内容类型">
+                <el-select v-model="aiGenerateForm.type" placeholder="选择内容类型" style="width: 100%;">
+                  <el-option label="旅行游记" value="travel" />
+                  <el-option label="美食分享" value="food" />
+                  <el-option label="读书心得" value="book" />
+                  <el-option label="影视剧评" value="movie" />
+                  <el-option label="数码评测" value="tech" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="关键词">
+                <el-input v-model="aiGenerateForm.keyword" placeholder="输入相关关键词（选填）" />
+              </el-form-item>
+            </el-form>
+            
+            <div v-if="aiGeneratingStatus" class="ai-generating-status">
+              <el-progress type="circle" :percentage="aiGeneratingProgress" :status="aiGeneratingProgress === 100 ? 'success' : ''" />
+              <p>{{ aiGeneratingMessage }}</p>
+            </div>
+          </div>
+          <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="aiGenerateDialogVisible = false">关闭</el-button>
+              <el-button type="primary" @click="generateContent" :loading="aiGeneratingStatus" style="background-color: #7db0e8; border-color: #7db0e8;">生成内容</el-button>
+            </span>
+          </template>
+        </el-dialog>
+        
         <div class="form-layout">
           <!-- 左侧内容区 -->
           <div class="form-left">
@@ -471,58 +469,199 @@ const handlePublish = async () => {
 @import '@/assets/styles/variables.scss';
 
 .publish-container {
-  max-width: 1150px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: $bg-light;
-  border-radius: $border-radius;
-  box-shadow: $box-shadow;
-  position: relative;
-  
-  @media (max-width: $breakpoint-sm) {
-    padding: 15px;
-  }
+  padding: 40px 20px 40px 20px;
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
 }
 
-.utility-buttons {
-  position: absolute;
-  top: 20px;
-  left: 25px;
-  z-index: 10;
+.publish-header {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.publish-header h2 {
+  font-size: 2.2rem;
+  color: #222;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.publish-header p {
+  color: #7db0e8;
+  font-size: 1.1rem;
+  letter-spacing: 0.5px;
+}
+
+.publish-form {
+  background: #fff;
+  padding: 40px 32px;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(125, 176, 232, 0.10), 0 1.5px 8px rgba(0,0,0,0.04);
+  border: 1.5px solid #f0f4fa;
+}
+
+.form-layout {
   display: flex;
-  gap: 10px;
-  
-  :deep(.el-button) {
-    box-shadow: $box-shadow;
-    border-radius: 18px;
-    padding: 18px 15px;
-    font-size: $font-size-small;
-    
-    &:hover, &:focus {
-      transform: translateY(-2px);
-      transition: transform 0.3s ease;
-    }
-    
-    &:first-child {
-      background-color: #a4b3cf;
-      border-color: #a4b3cf;
-      
-      &:hover {
-        background-color: darken(#a4b3cf, 10%);
-        border-color: darken(#a4b3cf, 10%);
-      }
-    }
-    
-    &:last-child {
-      background-color: #7db0e8;
-      border-color: #7db0e8;
-      
-      &:hover {
-        background-color: darken(#7db0e8, 10%);
-        border-color: darken(#7db0e8, 10%);
-      }
-    }
-  }
+  gap: 40px;
+}
+
+.form-left {
+  flex: 2;
+}
+
+.form-right {
+  flex: 1;
+}
+
+.form-divider {
+  width: 1.5px;
+  background: linear-gradient(180deg, #e3eaf2 0%, #f7fafd 100%);
+  border-radius: 1px;
+}
+
+:deep(.el-input__wrapper), :deep(.el-select .el-input__wrapper), :deep(.el-select .el-input__inner), :deep(.el-textarea__inner) {
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px rgba(125, 176, 232, 0.08);
+  border: 1.5px solid #e3eaf2;
+  background: #f7fafd;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+:deep(.el-input__wrapper:hover), :deep(.el-select .el-input__wrapper:hover), :deep(.el-textarea__inner:hover) {
+  border-color: #7db0e8;
+  box-shadow: 0 4px 16px rgba(125, 176, 232, 0.13);
+}
+:deep(.el-input__wrapper.is-focus), :deep(.el-select .el-input__wrapper.is-focus), :deep(.el-textarea__inner:focus) {
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 2px #b3d6f7;
+}
+
+:deep(.el-select-dropdown), :deep(.el-select-dropdown__wrap) {
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(125, 176, 232, 0.13);
+}
+
+.form-actions {
+  margin-top: 36px;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+:deep(.el-button) {
+  border-radius: 14px !important;
+  padding: 12px 28px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(125, 176, 232, 0.08);
+  transition: background 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+:deep(.el-button--success) {
+  background: linear-gradient(90deg, #7db0e8 0%, #4a90e2 100%);
+  border: none;
+}
+:deep(.el-button--success:hover) {
+  background: linear-gradient(90deg, #4a90e2 0%, #7db0e8 100%);
+  box-shadow: 0 4px 16px rgba(125, 176, 232, 0.13);
+}
+:deep(.el-button--info) {
+  background: #f7fafd;
+  color: #4a90e2;
+  border: 1.5px solid #b3d6f7;
+}
+:deep(.el-button--info:hover) {
+  background: #e3eaf2;
+  color: #4a90e2;
+  border-color: #7db0e8;
+}
+:deep(.el-button--primary) {
+  background: #4a90e2;
+  border: none;
+}
+:deep(.el-button--primary:hover) {
+  background: #7db0e8;
+}
+:deep(.el-button--default) {
+  background: #fff;
+  color: #222;
+  border: 1.5px solid #e3eaf2;
+}
+:deep(.el-button--default:hover) {
+  background: #f7fafd;
+  border-color: #7db0e8;
+}
+
+:deep(.el-upload--picture-card) {
+  border-radius: 14px;
+  border: 1.5px dashed #e3eaf2;
+  background: #f7fafd;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+:deep(.el-upload--picture-card:hover) {
+  border-color: #7db0e8;
+  box-shadow: 0 2px 8px rgba(125, 176, 232, 0.13);
+}
+:deep(.el-dialog) {
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(125, 176, 232, 0.13);
+}
+:deep(.el-dialog__header) {
+  padding: 24px 24px 12px 24px;
+  border-bottom: 1px solid #f0f4fa;
+}
+:deep(.el-dialog__body) {
+  padding: 32px 24px;
+}
+:deep(.el-dialog__footer) {
+  padding: 20px 24px;
+  border-top: 1px solid #f0f4fa;
+}
+
+.inspiration-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 18px;
+  margin-top: 20px;
+}
+.inspiration-item {
+  display: flex;
+  align-items: center;
+  padding: 14px;
+  background: #f7fafd;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1.5px solid #e3eaf2;
+}
+.inspiration-item:hover {
+  background: #e3eaf2;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 2px 8px rgba(125, 176, 232, 0.13);
+}
+.inspiration-icon {
+  margin-right: 12px;
+  color: #7db0e8;
+  font-size: 1.3em;
+}
+.ai-generating-status {
+  text-align: center;
+  margin-top: 20px;
+}
+.ai-generating-status p {
+  margin-top: 10px;
+  color: #666;
+}
+.permission-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.permission-icon {
+  font-size: 16px;
+  color: #7db0e8;
 }
 
 .inspiration-content {
@@ -539,243 +678,10 @@ const handlePublish = async () => {
   margin-bottom: 20px;
 }
 
-.ai-generating-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-  padding: 20px 0;
-  
-  p {
-    margin-top: 15px;
-    color: $text-secondary;
-    font-size: $font-size-medium;
-  }
-}
-
 .inspiration-tip {
   font-size: $font-size-medium;
   color: $text-secondary;
   margin-bottom: 20px;
-}
-
-.inspiration-list {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.inspiration-item {
-  display: flex;
-  align-items: flex-start;
-  padding: 10px 15px;
-  background-color: $secondary-color;
-  border-radius: $border-radius-small;
-  transition: all 0.3s ease;
-  cursor: pointer;
-  
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: $box-shadow-light;
-  }
-}
-
-.inspiration-icon {
-  margin-right: 10px;
-  color: $primary-color;
-  font-size: $font-size-large;
-}
-
-.inspiration-text {
-  color: $text-primary;
-  font-size: $font-size-normal;
-  line-height: 1.5;
-}
-
-:deep(.el-dialog__header) {
-  border-bottom: 1px solid $border-light;
-  padding: 15px 20px;
-}
-
-:deep(.el-dialog__body) {
-  padding: 20px;
-}
-
-:deep(.el-dialog__footer) {
-  border-top: 1px solid $border-light;
-  padding: 15px 20px;
-}
-
-.publish-header {
-  text-align: center;
-  margin-bottom: 30px;
-  
-  h2 {
-    font-size: $font-size-xxlarge;
-    color: $text-primary;
-    margin: 0 0 8px;
-    
-    @media (max-width: $breakpoint-xs) {
-      font-size: $font-size-xlarge;
-    }
-  }
-  
-  p {
-    font-size: $font-size-normal;
-    color: $text-light;
-    margin: 0;
-  }
-}
-
-.publish-form {
-  .el-form-item {
-    margin-bottom: 25px;
-  }
-  
-  :deep(.el-form-item__label) {
-    font-size: $font-size-medium;
-    color: $text-secondary;
-  }
-}
-
-.form-layout {
-  display: flex;
-  margin-bottom: $spacing-large;
-  
-  @media (max-width: $breakpoint-md) {
-    flex-direction: column;
-  }
-}
-
-.form-left {
-  flex: 2;
-  padding-right: $spacing-large;
-  
-  @media (max-width: $breakpoint-md) {
-    padding-right: 0;
-    margin-bottom: $spacing-large;
-  }
-}
-
-.form-divider {
-  width: 1px;
-  background-color: $border-light;
-  margin: 0 $spacing-large;
-  
-  @media (max-width: $breakpoint-md) {
-    width: 100%;
-    height: 1px;
-    margin: $spacing-medium 0;
-  }
-}
-
-.form-right {
-  flex: 1;
-  padding-left: $spacing-large;
-  
-  @media (max-width: $breakpoint-md) {
-    padding-left: 0;
-  }
-}
-
-.form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 30px;
-  
-  @media (max-width: $breakpoint-xs) {
-    flex-direction: column;
-    
-    .el-button {
-      margin-left: 0 !important;
-    }
-  }
-  
-  .el-button {
-    min-width: 90px;
-    border-radius: 20px;
-    
-    &:last-child {
-      background-color: $primary-color;
-      border-color: $primary-color;
-      
-      &:hover, &:focus {
-        background-color: darken($primary-color, 10%);
-        border-color: darken($primary-color, 10%);
-      }
-    }
-  }
-}
-
-:deep(.el-upload--picture-card) {
-  width: 120px;
-  height: 120px;
-  line-height: 120px;
-  border-color: $border-light;
-  border-radius: $border-radius-small;
-  
-  &:hover {
-    border-color: $primary-color;
-  }
-  
-  @media (max-width: $breakpoint-xs) {
-    width: 100px;
-    height: 100px;
-    line-height: 100px;
-  }
-}
-
-:deep(.el-upload-list--picture-card .el-upload-list__item) {
-  width: 120px;
-  height: 120px;
-  border-radius: $border-radius-small;
-  
-  @media (max-width: $breakpoint-xs) {
-    width: 100px;
-    height: 100px;
-  }
-}
-
-:deep(.el-textarea__inner) {
-  border-radius: $border-radius-small;
-  &:focus {
-    border-color: $primary-color;
-  }
-}
-
-:deep(.el-select .el-input__inner) {
-  border-radius: $border-radius-small;
-}
-
-:deep(.el-radio) {
-  margin-right: 25px;
-  margin-bottom: 10px;
-  
-  @media (max-width: $breakpoint-xs) {
-    margin-right: 15px;
-  }
-}
-
-:deep(.el-radio__input.is-checked + .el-radio__label) {
-  color: $primary-color;
-}
-
-:deep(.el-upload__tip) {
-  font-size: $font-size-small;
-  color: $text-light;
-}
-
-.permission-option {
-  display: flex;
-  align-items: center;
-  padding: 2px 0;
-}
-
-.permission-icon {
-  margin-right: 8px;
-  font-size: $font-size-medium;
-  color: $primary-color;
 }
 
 .image-preview-dialog {
@@ -790,6 +696,21 @@ const handlePublish = async () => {
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+  }
+}
+
+.utility-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-start;
+  margin-bottom: 18px;
+  margin-top: 0;
+  padding-left: 0;
+}
+@media (max-width: 700px) {
+  .utility-buttons {
+    justify-content: center;
+    padding-left: 0;
   }
 }
 </style>

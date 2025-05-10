@@ -1,6 +1,6 @@
 <template>
   <div class="app-layout">
-    <!-- 顶部导航栏 -->
+    <!-- 顶部导航栏（发布页同款） -->
     <el-header class="header">
       <div class="header-content">
         <div class="logo-container">
@@ -8,7 +8,6 @@
             <h1 class="logo">Z-Log</h1>
           </router-link>
         </div>
-        
         <div class="search-container">
           <el-input
             placeholder="搜索"
@@ -18,7 +17,6 @@
             @keyup.enter="handleSearch"
           ></el-input>
         </div>
-
         <div class="menu-container">
           <el-menu
             mode="horizontal"
@@ -29,10 +27,7 @@
             text-color="#333"
             active-text-color="#333"
           >
-            <!-- 占位菜单项，使真正的按钮靠右 -->
             <div class="flex-grow" />
-            
-            <!-- 个人主页图标 -->
             <el-menu-item index="1" class="profile-item">
               <router-link to="/profile" class="profile-link">
                 <el-button circle>
@@ -40,8 +35,6 @@
                 </el-button>
               </router-link>
             </el-menu-item>
-            
-            <!-- 发布按钮 -->
             <el-menu-item index="2" class="publish-item">
               <router-link to="/publish" class="publish-btn">
                 <el-button type="" round>
@@ -49,8 +42,6 @@
                 </el-button>
               </router-link>
             </el-menu-item>
-            
-            <!-- 登录/注册按钮或用户头像 -->
             <template v-if="isLogin">
               <el-sub-menu index="3">
                 <template #title>
@@ -65,7 +56,6 @@
             <template v-else>
               <el-menu-item index="4" class="login-item">
                 <router-link to="/login">
-                  <!-- 修改此处 -->
                   <el-button type="" plain :style="{ color: '$text-secondary', backgroundColor: '$primary-color' }">登录</el-button>
                 </router-link>
               </el-menu-item>
@@ -79,12 +69,10 @@
         </div>
       </div>
     </el-header>
-    
     <!-- 主要内容区 -->
     <div class="main-content">
       <slot></slot>
     </div>
-    
     <!-- 底部信息（简单版本） -->
     <el-footer class="footer">
       <p>© 2023 Z-Log 版权所有</p>

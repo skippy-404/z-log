@@ -252,7 +252,7 @@ const handleRegister = async () => {
   width: 100%;
   max-width: 480px;
   background-color: $bg-light;
-  border-radius: $border-radius;
+  border-radius: 18px;
   box-shadow: $box-shadow;
   padding: 30px;
   
