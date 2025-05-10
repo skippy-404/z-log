@@ -16,7 +16,7 @@
           <template #description>
             <span>登录后查看更多精彩内容</span>
           </template>
-          <el-button  @click="$router.push('/login')">立即登录</el-button>
+          <el-button @click="$router.push('/login')">立即登录</el-button>
         </el-empty>
         
         <div v-else class="placeholder-content">
@@ -44,55 +44,88 @@ const isLogin = computed(() => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/variables.scss';
+@use '@/assets/styles/variables.scss' as *;
 
 .home-container {
-  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 40px 32px;
   box-sizing: border-box;
   
   @media (max-width: $breakpoint-sm) {
-    padding: 0 10px;
+    padding: 20px 16px;
   }
 }
 
 .category-tabs {
-  background-color: $bg-light;
-  border-radius: $border-radius;
-  padding: 8px 16px;
-  margin-bottom: 20px;
-  box-shadow: $box-shadow-light;
-  width: 100%;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 16px 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 8px 32px rgba(125, 176, 232, 0.10), 0 1.5px 8px rgba(0,0,0,0.04);
+  border: 1.5px solid #f0f4fa;
   
   :deep(.el-tabs__item) {
-    font-size: $font-size-medium;
-    padding: 0 20px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #555;
+    padding: 0 24px;
     
     @media (max-width: $breakpoint-sm) {
-      padding: 0 10px;
-      font-size: $font-size-normal;
+      padding: 0 16px;
+      font-size: 1rem;
     }
     
     &.is-active {
-      color: $primary-color;
-      font-weight: bold;
+      color: #4a90e2;
     }
   }
   
   :deep(.el-tabs__active-bar) {
-    background-color: $primary-color;
+    background-color: #4a90e2;
+    height: 3px;
+    border-radius: 3px;
+  }
+
+  :deep(.el-tabs__nav-wrap::after) {
+    height: 1px;
+    background-color: #f0f4fa;
   }
 }
 
 .content-container {
-  background-color: $bg-light;
-  border-radius: $border-radius;
-  padding: 20px;
-  min-height: 400px;
-  box-shadow: $box-shadow-light;
-  width: 100%;
+  background-color: #fff;
+  border-radius: 20px;
+  padding: 32px;
+  min-height: 500px;
+  box-shadow: 0 8px 32px rgba(125, 176, 232, 0.10), 0 1.5px 8px rgba(0,0,0,0.04);
+  border: 1.5px solid #f0f4fa;
+  
+  :deep(.el-empty) {
+    padding: 60px 0;
+    
+    .el-empty__description {
+      margin-top: 16px;
+      margin-bottom: 24px;
+      color: #7db0e8;
+      font-size: 1.1rem;
+    }
+    
+    .el-button {
+      background: linear-gradient(90deg, #7db0e8 0%, #4a90e2 100%);
+      border: none;
+      border-radius: 14px !important;
+      padding: 12px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      box-shadow: 0 4px 16px rgba(125, 176, 232, 0.13);
+      
+      &:hover {
+        background: linear-gradient(90deg, #4a90e2 0%, #7db0e8 100%);
+        box-shadow: 0 8px 24px rgba(125, 176, 232, 0.2);
+      }
+    }
+  }
   
   .placeholder-content {
     margin: 20px 0;
@@ -101,12 +134,14 @@ const isLogin = computed(() => {
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-top: 30px;
-      color: $text-light;
+      margin-top: 40px;
+      color: #7db0e8;
+      font-size: 1.1rem;
       
       .el-icon {
         margin-right: 8px;
-        color: $primary-color;
+        font-size: 1.2rem;
+        color: #4a90e2;
       }
     }
   }
