@@ -13,8 +13,8 @@
         class="publish-form"
       >
         <div class="utility-buttons">
-          <el-button type="info" size="small" icon="Lightning" @click="showInspirationDialog">灵感闪现</el-button>
-          <el-button type="primary" size="small" icon="ChatDotRound" @click="showAIGenerateDialog">AI一键生成</el-button>
+          <el-button type="info" size="default" icon="Lightning" @click="showInspirationDialog" class="utility-btn inspiration-btn">灵感闪现</el-button>
+          <el-button type="primary" size="default" icon="ChatDotRound" @click="showAIGenerateDialog" class="utility-btn ai-btn">AI一键生成</el-button>
         </div>
         <!-- 灵感闪现对话框 -->
         <el-dialog
@@ -466,7 +466,7 @@ const handlePublish = async () => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/variables.scss';
+@use '@/assets/styles/variables.scss' as *;
 
 .publish-container {
   max-width: 1200px;
@@ -701,12 +701,51 @@ const handlePublish = async () => {
 
 .utility-buttons {
   display: flex;
-  gap: 12px;
+  gap: 16px;
   justify-content: flex-start;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
   margin-top: 0;
   padding-left: 0;
 }
+
+.utility-btn {
+  height: 44px !important;
+  padding: 0 20px !important;
+  font-size: 0.95rem !important;
+  border-radius: 14px !important;
+  box-shadow: 0 4px 8px rgba(125, 176, 232, 0.12) !important;
+  transition: all 0.3s !important;
+  
+  :deep(.el-icon) {
+    font-size: 1.1rem;
+    margin-right: 6px;
+  }
+}
+
+.inspiration-btn {
+  background: #f0f7ff !important;
+  color: #4a90e2 !important;
+  border: 1.5px solid #b3d6f7 !important;
+  
+  &:hover {
+    background: #e3eaf2 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(125, 176, 232, 0.18) !important;
+  }
+}
+
+.ai-btn {
+  background: linear-gradient(90deg, #7db0e8 0%, #4a90e2 100%) !important;
+  border: none !important;
+  color: white !important;
+  
+  &:hover {
+    background: linear-gradient(90deg, #4a90e2 0%, #7db0e8 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(125, 176, 232, 0.22) !important;
+  }
+}
+
 @media (max-width: 700px) {
   .utility-buttons {
     justify-content: center;
