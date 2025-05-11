@@ -59,15 +59,16 @@ public class AIGenerateServiceImpl implements AIGenerateService {
             promptBuilder.append("关键词是：").append(keyword).append("。");
         }
         
-        promptBuilder.append("\n请按照以下格式返回：\n")
+        promptBuilder.append("\n请严格按照以下格式返回，缺一不可：\n")
                 .append("标题：[这里是生成的标题]\n")
-                .append("图片建议：[这里是详细的图片描述或建议，用于指导用户选择什么样的图片]\n")
+                .append("图片建议：[这里是详细的图片描述或建议，用于指导用户选择什么样的图片，请一定要返回这部分内容，至少50字]\n")
                 .append("正文：[这里是生成的正文内容，保持小红书风格，有emoji表情，分段清晰]\n\n")
                 .append("生成的内容需要符合小红书的风格特点：")
                 .append("1. 标题吸引人，带有一定的情感或悬念")
                 .append("2. 文字中适当使用emoji表情")
                 .append("3. 段落短小精悍，易于阅读")
-                .append("4. 内容真实、有个人体验，不要过于营销");
+                .append("4. 内容真实、有个人体验，不要过于营销")
+                .append("5. 图片建议部分必须包含，这对用户选择合适的配图非常重要");
         
         return promptBuilder.toString();
     }
@@ -192,6 +193,11 @@ public class AIGenerateServiceImpl implements AIGenerateService {
                 }
             }
             
+            // 如果图片建议仍然为空，根据内容生成默认建议
+            if (imagePrompt == null || imagePrompt.isEmpty()) {
+                imagePrompt = generateDefaultImagePrompt(title, content);
+            }
+            
             return new AIGenerateResponse(title, content, imagePrompt);
         } catch (Exception e) {
             System.err.println("解析API响应出错: " + e.getMessage());
@@ -201,9 +207,33 @@ public class AIGenerateServiceImpl implements AIGenerateService {
             return new AIGenerateResponse(
                     "AI生成的标题",
                     apiResponse,
-                    "请选择与内容相关的图片"
+                    "请选择与内容相关的图片，画面构图完整，光线充足，色彩鲜明"
             );
         }
+    }
+    
+    /**
+     * 根据标题和正文生成默认的图片建议
+     */
+    private String generateDefaultImagePrompt(String title, String content) {
+        // 提取内容中的关键词
+        String combinedText = title + " " + content;
+        
+        // 检查内容类型的关键词
+        if (combinedText.contains("旅行") || combinedText.contains("旅游") || combinedText.contains("景点")) {
+            return "拍摄风景照时选择光线充足的时段，可以是日出日落的黄金时刻。构图时包含主要景点，如果有人物可以选择侧面或背影，让画面更有故事感。色彩鲜明，可以适当提高饱和度。";
+        } else if (combinedText.contains("美食") || combinedText.contains("菜") || combinedText.contains("餐厅")) {
+            return "食物照片俯拍效果最佳，利用自然光线，避免使用闪光灯。可以添加一些餐具作为点缀，增加层次感。画面应清晰呈现食物质感和色彩，可以适当模糊背景，突出主体。";
+        } else if (combinedText.contains("书") || combinedText.contains("阅读") || combinedText.contains("文学")) {
+            return "创造一个温馨的阅读氛围，可以在咖啡厅或家中拍摄。书籍应清晰可见，可以搭配咖啡杯、眼镜等道具增添生活感。使用柔和的光线，营造舒适的阅读氛围。";
+        } else if (combinedText.contains("电影") || combinedText.contains("影视") || combinedText.contains("剧")) {
+            return "可以使用电影海报或精彩剧照，也可以拍摄观影环境。如果是自拍，可以选择在电影院或家中观影的场景，保持灯光氛围感。画面构图精致，表情自然。";
+        } else if (combinedText.contains("数码") || combinedText.contains("科技") || combinedText.contains("手机")) {
+            return "产品照片需要光线充足，背景简洁，突出产品细节。可以展示使用场景，或创意展示产品功能。避免杂乱的背景，保持画面整洁，突出产品的科技感和质感。";
+        }
+        
+        // 默认图片建议
+        return "选择与内容主题相关的高质量图片，确保光线充足，画面清晰。可以适当添加贴合主题的道具，增加画面层次感。构图时注意突出主体，背景简洁不杂乱。适当调整色彩平衡，使画面看起来更加协调。";
     }
     
     /**
