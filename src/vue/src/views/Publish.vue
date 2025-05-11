@@ -71,24 +71,25 @@
             
             <!-- 生成结果显示区域 -->
             <div v-if="aiGenerateResponse && !aiGeneratingStatus" class="ai-generated-result">
-              <el-divider>生成结果</el-divider>
+              <el-divider></el-divider>
               
               <div class="result-preview">
                 <h3>{{ aiGenerateResponse.title }}</h3>
                 
                 <!-- 图片建议部分 -->
                 <div v-if="imagePromptVisible && aiGenerateResponse.imagePrompt" class="image-prompt-section">
-                  <el-alert
-                    :closable="false"
-                    type="info"
-                    title="图片建议"
-                    :description="aiGenerateResponse.imagePrompt"
-                    show-icon
-                  />
+                  <div class="image-prompt-content">
+                    <div class="custom-prompt-box">
+                      <div class="prompt-header">图片建议：</div>
+                      <div class="prompt-body">{{ aiGenerateResponse.imagePrompt }}</div>
+                    </div>
+                  </div>
                 </div>
                 
                 <div class="content-preview">
-                  <p class="preview-text">{{ aiGenerateResponse.content.length > 150 ? aiGenerateResponse.content.substring(0, 150) + '...' : aiGenerateResponse.content }}</p>
+                  <div class="preview-text-container">
+                    <p class="preview-text">{{ aiGenerateResponse.content }}</p>
+                  </div>
                 </div>
               </div>
               
@@ -333,6 +334,10 @@ const generateContent = async () => {
     
     const result = await response.json()
     console.log('API返回结果:', result)
+    
+    // 添加日志输出，显示图片建议内容
+    console.log('图片建议内容:', result.data?.imagePrompt || '无图片建议')
+    console.log('图片建议长度:', result.data?.imagePrompt?.length || 0)
     
     clearInterval(timer)
     aiGeneratingProgress.value = 100
@@ -706,14 +711,6 @@ const handlePublish = async () => {
   color: #7db0e8;
   font-size: 1.3em;
 }
-.ai-generating-status {
-  text-align: center;
-  margin-top: 20px;
-}
-.ai-generating-status p {
-  margin-top: 10px;
-  color: #666;
-}
 .permission-option {
   display: flex;
   align-items: center;
@@ -813,9 +810,26 @@ const handlePublish = async () => {
   }
 }
 
-/* AI生成结果样式 */
+/* AI生成相关样式 */
+.ai-generating-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.ai-generating-status p {
+  margin-top: 15px;
+  color: #409EFF;
+  font-size: 14px;
+  text-align: center;
+}
+
 .ai-generated-result {
   margin-top: 20px;
+  text-align: center;
 }
 
 .result-preview {
@@ -823,48 +837,98 @@ const handlePublish = async () => {
   border-radius: 8px;
   padding: 15px;
   margin-bottom: 15px;
+  text-align: center;
 }
 
 .result-preview h3 {
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
   color: #333;
   font-size: 16px;
   font-weight: 600;
+  text-align: center;
 }
 
 .content-preview {
-  margin-top: 15px;
+  margin-top: 10px;
+  text-align: center;
+}
+
+.preview-text-container {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 5px 10px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  margin-top: 10px;
+  border: 1px solid #eee;
 }
 
 .preview-text {
   margin: 0;
-  color: #666;
+  text-align: left;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
+  color: #555;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 自定义滚动条样式 */
+.preview-text-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.preview-text-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.preview-text-container::-webkit-scrollbar-thumb {
+  background: #c8d8ea;
+  border-radius: 3px;
+}
+
+.preview-text-container::-webkit-scrollbar-thumb:hover {
+  background: #7db0e8;
 }
 
 .image-prompt-section {
-  margin: 15px 0;
-}
-
-/* AI生成状态 */
-.ai-generating-status {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 0;
-}
-
-.ai-generating-status p {
-  margin-top: 15px;
-  color: #409EFF;
-  font-size: 14px;
-}
-
-.el-alert {
-  width: 100%;
   margin: 10px 0;
+  text-align: center;
+}
+
+.image-prompt-content {
+  padding: 0;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.custom-prompt-box {
+  background-color: #f0f7ff;
+  border-radius: 8px;
+  padding: 12px 15px;
+  border: 1px solid #b3d6f7;
+  width: 100%;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.prompt-header {
+  font-size: 15px;
+  font-weight: 600;
+  color: #4a90e2;
+  margin-bottom: 8px;
+  text-align: left;
+  display: inline-block;
+}
+
+.prompt-body {
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #555;
 }
 </style>

@@ -14,6 +14,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * AI内容生成服务实现类
@@ -59,16 +61,17 @@ public class AIGenerateServiceImpl implements AIGenerateService {
             promptBuilder.append("关键词是：").append(keyword).append("。");
         }
         
-        promptBuilder.append("\n请严格按照以下格式返回，缺一不可：\n")
+        promptBuilder.append("\n\n请严格按照以下格式返回，并确保各个部分清晰可辨：\n")
                 .append("标题：[这里是生成的标题]\n")
-                .append("图片建议：[这里是详细的图片描述或建议，用于指导用户选择什么样的图片，请一定要返回这部分内容，至少50字]\n")
+                .append("图片建议：[这里是详细的图片建议，至少50字，描述应该选择什么样的图片、如何构图、使用什么滤镜等，帮助用户选择合适的图片配图]\n")
                 .append("正文：[这里是生成的正文内容，保持小红书风格，有emoji表情，分段清晰]\n\n")
-                .append("生成的内容需要符合小红书的风格特点：")
-                .append("1. 标题吸引人，带有一定的情感或悬念")
-                .append("2. 文字中适当使用emoji表情")
-                .append("3. 段落短小精悍，易于阅读")
-                .append("4. 内容真实、有个人体验，不要过于营销")
-                .append("5. 图片建议部分必须包含，这对用户选择合适的配图非常重要");
+                .append("非常重要：请务必确保响应包含以上三个部分，并且每个部分都有明确的标记'标题：'、'图片建议：'和'正文：'。不要添加其他标题或分隔符。\n\n")
+                .append("生成的内容需要符合小红书的风格特点：\n")
+                .append("1. 标题吸引人，带有一定的情感或悬念\n")
+                .append("2. 文字中适当使用emoji表情\n")
+                .append("3. 段落短小精悍，易于阅读\n")
+                .append("4. 内容真实、有个人体验，不要过于营销\n")
+                .append("5. 图片建议必须详细具体，这对用户选择合适的配图非常重要");
         
         return promptBuilder.toString();
     }
@@ -156,49 +159,81 @@ public class AIGenerateServiceImpl implements AIGenerateService {
             String imagePrompt = "";
             String content = "";
             
-            // 按行分割内容
-            String[] lines = apiResponse.split("\n");
+            System.out.println("======== 原始API响应 ========");
+            System.out.println(apiResponse);
+            System.out.println("==========================");
             
-            boolean inContent = false;
-            StringBuilder contentBuilder = new StringBuilder();
+            // 提取标题
+            Pattern titlePattern = Pattern.compile("标题：([^\\n]+)");
+            Matcher titleMatcher = titlePattern.matcher(apiResponse);
+            if (titleMatcher.find()) {
+                title = titleMatcher.group(1).trim();
+                System.out.println("✅ 提取到标题: " + title);
+            } else {
+                System.out.println("❌ 未能提取到标题");
+            }
             
-            for (String line : lines) {
-                line = line.trim();
-                
-                if (line.startsWith("标题：")) {
-                    title = line.substring("标题：".length()).trim();
-                } else if (line.startsWith("图片建议：")) {
-                    imagePrompt = line.substring("图片建议：".length()).trim();
-                } else if (line.startsWith("正文：")) {
-                    inContent = true;
-                    // 跳过"正文："这行
-                } else if (inContent) {
-                    contentBuilder.append(line).append("\n");
+            // 提取图片建议 - 匹配"图片建议："和"正文："之间的内容
+            Pattern imagePattern = Pattern.compile("图片建议：([\\s\\S]*?)正文：");
+            Matcher imageMatcher = imagePattern.matcher(apiResponse);
+            if (imageMatcher.find()) {
+                imagePrompt = imageMatcher.group(1).trim();
+                System.out.println("✅ 提取到图片建议，长度: " + imagePrompt.length());
+                System.out.println("图片建议内容: " + imagePrompt);
+            } else {
+                System.out.println("❌ 未能提取到图片建议，尝试备用正则表达式");
+                // 备用正则表达式 - 如果没有"正文："作为结束标记，尝试使用多行匹配
+                Pattern backupImagePattern = Pattern.compile("图片建议：([\\s\\S]*?)(?=\\n\\n|正文：)");
+                Matcher backupImageMatcher = backupImagePattern.matcher(apiResponse);
+                if (backupImageMatcher.find()) {
+                    imagePrompt = backupImageMatcher.group(1).trim();
+                    System.out.println("✅ 使用备用正则表达式提取到图片建议，长度: " + imagePrompt.length());
+                    System.out.println("图片建议内容: " + imagePrompt);
+                } else {
+                    System.out.println("❌ 备用正则表达式也未能提取到图片建议");
                 }
             }
             
-            content = contentBuilder.toString().trim();
-            
-            // 如果没有提取到标题或内容，处理整个响应
-            if (title.isEmpty() || content.isEmpty()) {
-                String[] parts = apiResponse.split("(?i)标题:|图片建议:|正文:", 4);
-                if (parts.length >= 2) {
-                    title = parts[1].trim();
-                }
-                if (parts.length >= 3) {
-                    imagePrompt = parts[2].trim();
-                }
-                if (parts.length >= 4) {
-                    content = parts[3].trim();
-                }
+            // 提取正文 - 匹配"正文："之后的所有内容
+            Pattern contentPattern = Pattern.compile("正文：([\\s\\S]*)$");
+            Matcher contentMatcher = contentPattern.matcher(apiResponse);
+            if (contentMatcher.find()) {
+                content = contentMatcher.group(1).trim();
+                System.out.println("✅ 提取到正文，长度: " + content.length());
+                System.out.println("正文前50个字符: " + content.substring(0, Math.min(50, content.length())));
+            } else {
+                System.out.println("❌ 未能提取到正文");
             }
             
             // 如果图片建议仍然为空，根据内容生成默认建议
             if (imagePrompt == null || imagePrompt.isEmpty()) {
+                System.out.println("⚠️ 图片建议为空，使用默认生成逻辑");
                 imagePrompt = generateDefaultImagePrompt(title, content);
+                System.out.println("生成的默认图片建议: " + imagePrompt);
+            } else {
+                System.out.println("✅ 使用API返回的图片建议");
             }
             
-            return new AIGenerateResponse(title, content, imagePrompt);
+            // 如果标题为空，生成一个默认标题
+            if (title == null || title.isEmpty()) {
+                title = "AI生成的精彩内容";
+                System.out.println("⚠️ 标题为空，使用默认标题: " + title);
+            }
+            
+            // 确保内容不为空
+            if (content == null || content.isEmpty()) {
+                System.out.println("⚠️ 正文为空，使用原始响应作为内容");
+                content = apiResponse;
+            }
+            
+            AIGenerateResponse response = new AIGenerateResponse(title, content, imagePrompt);
+            System.out.println("======== 解析完成 ========");
+            System.out.println("标题: " + response.getTitle());
+            System.out.println("图片建议长度: " + response.getImagePrompt().length());
+            System.out.println("正文长度: " + response.getContent().length());
+            System.out.println("==========================");
+            
+            return response;
         } catch (Exception e) {
             System.err.println("解析API响应出错: " + e.getMessage());
             e.printStackTrace();
@@ -221,19 +256,19 @@ public class AIGenerateServiceImpl implements AIGenerateService {
         
         // 检查内容类型的关键词
         if (combinedText.contains("旅行") || combinedText.contains("旅游") || combinedText.contains("景点")) {
-            return "拍摄风景照时选择光线充足的时段，可以是日出日落的黄金时刻。构图时包含主要景点，如果有人物可以选择侧面或背影，让画面更有故事感。色彩鲜明，可以适当提高饱和度。";
+            return "推荐使用明亮自然的风景照片，最好包含蓝天白云或日落/日出的场景。如果有人物出镜，可以选择背影或侧脸，增加画面故事感。建议使用明亮的滤镜提高画面饱和度，让颜色更加鲜明。";
         } else if (combinedText.contains("美食") || combinedText.contains("菜") || combinedText.contains("餐厅")) {
-            return "食物照片俯拍效果最佳，利用自然光线，避免使用闪光灯。可以添加一些餐具作为点缀，增加层次感。画面应清晰呈现食物质感和色彩，可以适当模糊背景，突出主体。";
+            return "建议使用俯拍构图，展示食物的全貌，同时可以加入一些餐具、植物或手部入镜增加生活感。光线要明亮自然，避免使用闪光灯。可以适当调高对比度，让食物看起来更加诱人。";
         } else if (combinedText.contains("书") || combinedText.contains("阅读") || combinedText.contains("文学")) {
-            return "创造一个温馨的阅读氛围，可以在咖啡厅或家中拍摄。书籍应清晰可见，可以搭配咖啡杯、眼镜等道具增添生活感。使用柔和的光线，营造舒适的阅读氛围。";
+            return "推荐在温馨的环境中拍摄书籍，比如咖啡桌上或舒适的沙发上。可以搭配一杯咖啡、眼镜或绿植等装饰物。使用柔和的暖色调滤镜，创造舒适的阅读氛围。";
         } else if (combinedText.contains("电影") || combinedText.contains("影视") || combinedText.contains("剧")) {
-            return "可以使用电影海报或精彩剧照，也可以拍摄观影环境。如果是自拍，可以选择在电影院或家中观影的场景，保持灯光氛围感。画面构图精致，表情自然。";
+            return "可以使用电影海报拼图或自己拍摄的观影场景。如果在家中，可以拍摄电视/投影屏幕和周围的观影环境。灯光可以偏暗一些，营造电影院的感觉。也可以加入零食、票根等元素增加真实感。";
         } else if (combinedText.contains("数码") || combinedText.contains("科技") || combinedText.contains("手机")) {
-            return "产品照片需要光线充足，背景简洁，突出产品细节。可以展示使用场景，或创意展示产品功能。避免杂乱的背景，保持画面整洁，突出产品的科技感和质感。";
+            return "建议在简洁干净的背景前拍摄产品，比如白色或纯色桌面。可以使用多角度展示，特别是产品的细节部分。光线要充足明亮，展现产品质感。也可以展示产品使用场景，增加实用性参考。";
         }
         
         // 默认图片建议
-        return "选择与内容主题相关的高质量图片，确保光线充足，画面清晰。可以适当添加贴合主题的道具，增加画面层次感。构图时注意突出主体，背景简洁不杂乱。适当调整色彩平衡，使画面看起来更加协调。";
+        return "建议选择与内容主题相关的高质量图片，确保画面清晰明亮。可以使用小红书流行的明亮滤镜，增加画面的吸引力。如果有人物出镜，可以选择自然的表情和姿态。构图时尽量简洁，突出主体，适当添加一些装饰元素增加层次感。";
     }
     
     /**
