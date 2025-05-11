@@ -21,12 +21,9 @@ public class UserInputController {
         FilterByAI filterByAI= userInputService.totalFilter(userInput);
         return ResponseEntity.success(filterByAI);
     }
-    //测试
-    @PostMapping("/deepSeek")
-    public ResponseEntity deepSeek(@RequestBody  UserInput userInput){
-        String deepSeekfilter= userInputService.DeepSeekfilter(userInput);
-        return ResponseEntity.success(deepSeekfilter);
-    }
+    
+    // 移除不再需要的deepSeek测试端点
+    
     //测试
     @PostMapping("/openAI")
     public ResponseEntity openAI(@RequestBody  UserInput userInput){
