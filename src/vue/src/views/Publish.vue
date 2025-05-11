@@ -45,7 +45,7 @@
         <el-dialog
           v-model="aiGenerateDialogVisible"
           title="AI一键生成"
-          width="500px"
+          width="600px"
         >
           <div class="ai-generate-content">
             <p class="ai-generate-tip">请选择你想生成的内容类型：</p>
@@ -68,11 +68,49 @@
               <el-progress type="circle" :percentage="aiGeneratingProgress" :status="aiGeneratingProgress === 100 ? 'success' : ''" />
               <p>{{ aiGeneratingMessage }}</p>
             </div>
+            
+            <!-- 生成结果显示区域 -->
+            <div v-if="aiGenerateResponse && !aiGeneratingStatus" class="ai-generated-result">
+              <el-divider>生成结果</el-divider>
+              
+              <div class="result-preview">
+                <h3>{{ aiGenerateResponse.title }}</h3>
+                
+                <!-- 图片建议部分 -->
+                <div v-if="imagePromptVisible && aiGenerateResponse.imagePrompt" class="image-prompt-section">
+                  <el-alert
+                    :closable="false"
+                    type="info"
+                    title="图片建议"
+                    :description="aiGenerateResponse.imagePrompt"
+                    show-icon
+                  />
+                </div>
+                
+                <div class="content-preview">
+                  <p class="preview-text">{{ aiGenerateResponse.content.length > 150 ? aiGenerateResponse.content.substring(0, 150) + '...' : aiGenerateResponse.content }}</p>
+                </div>
+              </div>
+              
+              <el-button 
+                type="success" 
+                @click="aiGenerateDialogVisible = false" 
+                style="width: 100%; margin-top: 15px;">
+                应用内容并关闭
+              </el-button>
+            </div>
           </div>
           <template #footer>
             <span class="dialog-footer">
               <el-button @click="aiGenerateDialogVisible = false">关闭</el-button>
-              <el-button type="primary" @click="generateContent" :loading="aiGeneratingStatus" style="background-color: #7db0e8; border-color: #7db0e8;">生成内容</el-button>
+              <el-button 
+                type="primary" 
+                @click="generateContent" 
+                :loading="aiGeneratingStatus" 
+                :disabled="aiGeneratingStatus || (aiGenerateResponse !== null)" 
+                style="background-color: #7db0e8; border-color: #7db0e8;">
+                生成内容
+              </el-button>
             </span>
           </template>
         </el-dialog>
@@ -236,6 +274,8 @@ const aiGenerateForm = reactive({
   type: 'travel',
   keyword: ''
 })
+const aiGenerateResponse = ref(null)
+const imagePromptVisible = ref(false)
 
 // 显示灵感对话框
 const showInspirationDialog = () => {
@@ -245,56 +285,67 @@ const showInspirationDialog = () => {
 // 显示AI生成对话框
 const showAIGenerateDialog = () => {
   aiGenerateDialogVisible.value = true
+  aiGenerateResponse.value = null
+  imagePromptVisible.value = false
 }
 
-// AI生成内容
-const generateContent = () => {
+// 调用后端AI生成内容API
+const generateContent = async () => {
   aiGeneratingStatus.value = true
   aiGeneratingProgress.value = 0
   aiGeneratingMessage.value = '正在生成内容...'
   
-  // 模拟生成进度
   const timer = setInterval(() => {
-    aiGeneratingProgress.value += 10
-    if (aiGeneratingProgress.value >= 100) {
-      clearInterval(timer)
-      aiGeneratingMessage.value = '内容生成完成!'
+    if (aiGeneratingProgress.value < 90) {
+      aiGeneratingProgress.value += 10
+    }
+  }, 300)
+  
+  try {
+    const contentTypeMap = {
+      'travel': 'travel',
+      'food': 'food',
+      'book': 'book',
+      'movie': 'movie',
+      'tech': 'tech'
+    }
+    
+    console.log('发送请求到:', 'http://localhost:8080/api/ai/generate')
+    console.log('请求内容:', {
+      contentType: contentTypeMap[aiGenerateForm.type],
+      keyword: aiGenerateForm.keyword
+    })
+    
+    const response = await fetch('http://localhost:8080/api/ai/generate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contentType: contentTypeMap[aiGenerateForm.type],
+        keyword: aiGenerateForm.keyword
+      })
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP错误: ${response.status} ${response.statusText}`)
+    }
+    
+    const result = await response.json()
+    console.log('API返回结果:', result)
+    
+    clearInterval(timer)
+    aiGeneratingProgress.value = 100
+    aiGeneratingMessage.value = '内容生成完成!'
+    
+    if (result.code === 200 && result.data) {
+      aiGenerateResponse.value = result.data
       
-      // 根据不同类型生成不同内容
-      let generatedTitle = ''
-      let generatedContent = ''
+      publishForm.title = result.data.title
+      publishForm.content = result.data.content
       
-      switch (aiGenerateForm.type) {
-        case 'travel':
-          generatedTitle = aiGenerateForm.keyword ? `${aiGenerateForm.keyword}之旅` : '我的精彩旅行记录'
-          generatedContent = '这是一次难忘的旅行体验，沿途的风景如画，人文风情独特。当地的美食令人回味无穷，特别是...[AI生成的旅行内容]'
-          break
-        case 'food':
-          generatedTitle = aiGenerateForm.keyword ? `品尝${aiGenerateForm.keyword}的美味体验` : '舌尖上的美食探索'
-          generatedContent = '这道美食的色香味俱全，口感丰富多层次。制作过程并不复杂，但需要注意火候的掌控...[AI生成的美食内容]'
-          break
-        case 'book':
-          generatedTitle = aiGenerateForm.keyword ? `《${aiGenerateForm.keyword}》读后感` : '近期阅读心得分享'
-          generatedContent = '这本书给我带来了全新的视角和思考，作者通过细腻的笔触描绘了...[AI生成的读书心得]'
-          break
-        case 'movie':
-          generatedTitle = aiGenerateForm.keyword ? `《${aiGenerateForm.keyword}》观后感` : '近期观影推荐'
-          generatedContent = '这部影片的剧情设计精妙，演员表演到位，特别是在情感表达方面...[AI生成的影评内容]'
-          break
-        case 'tech':
-          generatedTitle = aiGenerateForm.keyword ? `${aiGenerateForm.keyword}深度评测` : '数码新品体验报告'
-          generatedContent = '这款产品的设计和用户体验做得相当出色，功能丰富且实用。在性能方面...[AI生成的评测内容]'
-          break
-        default:
-          generatedTitle = '我的精彩分享'
-          generatedContent = '这是AI帮我生成的精彩内容...[AI生成的通用内容]'
-      }
+      imagePromptVisible.value = true
       
-      // 应用生成的内容
-      publishForm.title = generatedTitle
-      publishForm.content = generatedContent
-      
-      // 随机选择相关话题
       const topicMap = {
         travel: '旅行',
         food: '美食',
@@ -304,17 +355,26 @@ const generateContent = () => {
       }
       publishForm.topics = [topicMap[aiGenerateForm.type] || topicOptions[0].value]
       
-      // 延迟关闭对话框
-      setTimeout(() => {
-        aiGenerateDialogVisible.value = false
-        aiGeneratingStatus.value = false
-        ElMessage({
-          message: 'AI内容生成成功',
-          type: 'success'
-        })
-      }, 1000)
+      ElMessage({
+        message: 'AI内容生成成功',
+        type: 'success'
+      })
+    } else {
+      throw new Error(result.message || '内容生成失败')
     }
-  }, 300)
+  } catch (error) {
+    clearInterval(timer)
+    aiGeneratingProgress.value = 100
+    aiGeneratingMessage.value = '生成失败: ' + error.message
+    console.error('AI内容生成错误:', error)
+    
+    ElMessage({
+      message: '内容生成失败: ' + error.message,
+      type: 'error'
+    })
+  } finally {
+    aiGeneratingStatus.value = false
+  }
 }
 
 // 选择特定灵感
@@ -751,5 +811,60 @@ const handlePublish = async () => {
     justify-content: center;
     padding-left: 0;
   }
+}
+
+/* AI生成结果样式 */
+.ai-generated-result {
+  margin-top: 20px;
+}
+
+.result-preview {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.result-preview h3 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.content-preview {
+  margin-top: 15px;
+}
+
+.preview-text {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.image-prompt-section {
+  margin: 15px 0;
+}
+
+/* AI生成状态 */
+.ai-generating-status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
+}
+
+.ai-generating-status p {
+  margin-top: 15px;
+  color: #409EFF;
+  font-size: 14px;
+}
+
+.el-alert {
+  width: 100%;
+  margin: 10px 0;
 }
 </style>
