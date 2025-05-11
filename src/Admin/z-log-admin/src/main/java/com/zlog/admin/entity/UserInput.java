@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserInput {
-    private String content; // 文字内容
+    private String content; // 文字内容 = keyword
     private String image_url;  // 图片
     private String prompt;  // 提示
-    private String title;  // 标题
+    private String title;  // 标题 = type
 }

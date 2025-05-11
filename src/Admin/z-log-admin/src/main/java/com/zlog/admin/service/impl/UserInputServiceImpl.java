@@ -30,6 +30,7 @@ public class UserInputServiceImpl implements UserInputService {
         String DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions";
         String API_KEY = "sk-1a44e77dbbcf4331844c6dbfc3ed2ad1";
         String UserInputContent = userInput.getContent();
+        String UserInputTitle =  userInput.getTitle();
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(100, TimeUnit.SECONDS)
                 .readTimeout(100, TimeUnit.SECONDS)
@@ -41,12 +42,12 @@ public class UserInputServiceImpl implements UserInputService {
                     \"messages\": [
                         {
                             \"role\": \"user\",
-                            \"content\": \"%s /n这是用户想要发布小红书的文字内容帮我分析，他的要点\"
+                            \"content\": \" 这是文章的标题：%s，这是用户想要发布小红书的文字内容：%s 帮我分析，他的要点\"
                         }
                     ],
                     \"stream\": false
                 }
-                """, UserInputContent);
+                """, UserInputTitle,UserInputContent);
         MediaType JSON = MediaType.parse("application/json; charset=utf-8");
         RequestBody requestBody = RequestBody.create(jsonBody, JSON);
         Request request = new Request.Builder()
@@ -164,7 +165,7 @@ public class UserInputServiceImpl implements UserInputService {
                     "messages": [
                         {
                             "role": "user",
-                            "content": "家人们，谁懂啊，偶遇吉林大学下头男 图片内容为：图像中有一个穿黑色背心的人。 总结这些内容帮我分析一下这篇博客的主题是什么，一句话给我主题"
+                            "content": "文本分析为：%s,图片分析为：%s，请帮我简短一句话总结 这篇博客的主题"
                         }
                     ],
                     "stream": false
