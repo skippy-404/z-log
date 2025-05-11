@@ -156,7 +156,12 @@ public class UserInputServiceImpl implements UserInputService {
             try (Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     System.err.println("分析请求失败: " + response.code() + " - " + response.message());
-                    return null;
+                    // 不返回null，而是返回默认的FilterByAI对象
+                    return new FilterByAI(
+                        imageDescription, 
+                        "抱歉，内容分析服务暂时不可用，请稍后再试", 
+                        "分析服务暂时不可用"
+                    );
                 }
                 
                 String responseBody = response.body().string();
@@ -232,13 +237,23 @@ public class UserInputServiceImpl implements UserInputService {
                 } catch (Exception e) {
                     System.err.println("解析JSON失败: " + e.getMessage());
                     e.printStackTrace();
-                    return null;
+                    // 不返回null，返回带有错误信息的对象
+                    return new FilterByAI(
+                        imageDescription, 
+                        "解析AI回复失败，请稍后再试", 
+                        "解析结果时出错: " + e.getMessage()
+                    );
                 }
             }
         } catch (Exception e) {
             System.err.println("请求出错: " + e.getMessage());
             e.printStackTrace();
-            return null;
+            // 不返回null，返回带有错误信息的对象
+            return new FilterByAI(
+                imageDescription, 
+                "AI服务请求失败，请稍后再试", 
+                "请求过程中出错: " + e.getMessage()
+            );
         }
     }
     @Override

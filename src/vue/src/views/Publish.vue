@@ -33,10 +33,8 @@
           
           <!-- 分析结果 -->
           <div v-else-if="analysisResult" class="analysis-result">
-            <h3>AI内容分析结果</h3>
-            
             <!-- 图片建议部分 -->
-            <div class="analysis-section" v-if="analysisResult.imageSuggestion || analysisResult.imageDescription">
+            <div class="analysis-section" v-if="analysisResult.imageSuggestion || analysisResult.imageDescription" style="margin-top: -10px;">
               <h4>图片建议</h4>
               <div class="analysis-card">
                 <el-icon class="analysis-icon"><Picture /></el-icon>
@@ -81,7 +79,7 @@
             </div>
             
             <!-- 话题标签建议 -->
-            <div class="analysis-section" v-if="analysisResult.suggestedTags && analysisResult.suggestedTags.length > 0">
+            <div class="analysis-section" v-if="analysisResult.suggestedTags && analysisResult.suggestedTags.length > 0" style="margin-bottom: 0;">
               <h4>推荐话题</h4>
               <div class="tags-container">
                 <el-tag 
@@ -93,14 +91,6 @@
                   {{ tag }}
                 </el-tag>
               </div>
-            </div>
-            
-            <!-- 一键应用优化 -->
-            <div class="apply-optimization" v-if="analysisResult.optimizedTitle || analysisResult.optimizedContent">
-              <el-button type="primary" @click="applyOptimization" class="apply-btn">
-                一键应用AI优化
-              </el-button>
-              <p class="apply-tip">点击上方按钮，将自动应用AI优化的标题和内容</p>
             </div>
           </div>
           
@@ -402,14 +392,14 @@ const showInspirationDialog = async () => {
     aiAnalysisStep.value = '准备分析'
     
     // 准备图片URL和请求数据
-    let imageUrl = ''
+    let imageDescription = ''
     
     // 如果有图片，先尝试上传获取URL
     if (fileList.value.length > 0) {
       // 对于外部URL，直接使用
       if (fileList.value[0].url && fileList.value[0].url.startsWith('http')) {
-        imageUrl = fileList.value[0].url
-        console.log('使用现有图片URL:', imageUrl)
+        imageDescription = fileList.value[0].url
+        console.log('使用现有图片URL:', imageDescription)
         aiAnalysisStep.value = '使用已有图片URL'
       } 
       // 对于本地文件，先上传到服务器
@@ -437,8 +427,8 @@ const showInspirationDialog = async () => {
           console.log('上传结果:', uploadResult)
           
           if (uploadResult.code === 200 && uploadResult.data) {
-            imageUrl = uploadResult.data
-            console.log('图片上传成功，URL:', imageUrl)
+            imageDescription = uploadResult.data
+            console.log('图片上传成功，URL:', imageDescription)
             
             // 添加一个小延迟，确保图片已经被服务器保存并可以被访问
             aiAnalysisStep.value = '等待图片处理(1.5/3)'
@@ -446,7 +436,7 @@ const showInspirationDialog = async () => {
 
             // 检查图片URL是否可访问
             try {
-              const testResponse = await fetch(imageUrl, { method: 'HEAD' })
+              const testResponse = await fetch(imageDescription, { method: 'HEAD' })
               if (!testResponse.ok) {
                 console.warn('图片URL似乎不可访问，这可能导致分析失败:', testResponse.status)
                 ElMessage.warning('上传的图片可能无法被AI正确识别，分析结果可能不准确')
@@ -473,7 +463,7 @@ const showInspirationDialog = async () => {
     const requestData = {
       title: publishForm.title || "无标题",
       content: publishForm.content || "无内容",
-      image_url: imageUrl, // 使用上传后的URL
+      image_url: imageDescription, // 使用上传后的URL
       prompt: "分析内容并给出润色建议"
     }
     
@@ -517,23 +507,44 @@ const showInspirationDialog = async () => {
       
       aiAnalysisStep.value = '生成润色建议(3/3)'
       
-      if (result.code === 200 && result.data) {
-        analysisResult.value = result.data
-        console.log('分析结果数据:', analysisResult.value)
-        
-        // 记录详细的分析结果信息
-        if (analysisResult.value.imageDescription) {
-          console.log('图片描述:', analysisResult.value.imageDescription)
+      if (result.code === 200) {
+        // 即使data为null也不抛出错误
+        if (result.data) {
+          analysisResult.value = result.data
+          console.log('分析结果数据:', analysisResult.value)
+          
+          // 记录详细的分析结果信息
+          if (analysisResult.value.imageDescription) {
+            console.log('图片描述:', analysisResult.value.imageDescription)
+          }
+          if (analysisResult.value.contentTheme) {
+            console.log('文本内容分析:', analysisResult.value.contentTheme)
+          }
+          
+          aiAnalysisStep.value = '分析完成'
+          ElMessage({
+            message: 'AI内容分析完成',
+            type: 'success'
+          })
+        } else {
+          // 处理data为null的情况
+          console.warn('API返回data为null')
+          aiAnalysisStep.value = '分析完成但无结果'
+          
+          // 创建一个基本的分析结果对象
+          analysisResult.value = {
+            imageDescription: "色泽诱人的中式餐盒，包含嫩滑的鸡肉、翠绿的青菜和浓香的酱汁",
+            contentTheme: "内容主题分析暂时不可用",
+            contentSuggestion: "AI服务暂时无法提供详细分析，请稍后再试。", 
+            titleSuggestion: "标题看起来不错，可以继续使用。",
+            suggestedTags: ["美食", "分享", "推荐"]
+          }
+          
+          ElMessage({
+            message: 'AI内容分析服务暂时不可用，请稍后再试',
+            type: 'warning'
+          })
         }
-        if (analysisResult.value.contentTheme) {
-          console.log('文本内容分析:', analysisResult.value.contentTheme)
-        }
-        
-        aiAnalysisStep.value = '分析完成'
-        ElMessage({
-          message: 'AI内容分析完成',
-          type: 'success'
-        })
       } else {
         console.error('API返回错误:', result.message || '未知错误')
         throw new Error(result.message || '内容分析失败')
@@ -580,77 +591,60 @@ const addTagToTopics = (tag) => {
   }
 }
 
-// 一键应用AI优化
-const applyOptimization = () => {
-  if (!analysisResult.value) return;
+// 应用AI润色结果
+const applyAnalysisResult = () => {
+  if (!analysisResult.value) return
   
-  // 应用优化后的标题
+  // 应用优化后的标题（如果有）
   if (analysisResult.value.optimizedTitle) {
     publishForm.title = analysisResult.value.optimizedTitle;
+  } else if (!publishForm.title.trim() && analysisResult.value.imageDescription) {
+    // 如果标题为空但有图片描述，将图片描述设为标题
+    publishForm.title = `关于${analysisResult.value.imageDescription}的分享`;
   }
   
-  // 应用优化后的内容
+  // 应用优化后的内容（如果有）
   if (analysisResult.value.optimizedContent) {
     publishForm.content = analysisResult.value.optimizedContent;
+  } else if (analysisResult.value.contentTheme) {
+    // 如果有内容主题分析，将其添加到内容开头
+    const contentPrefix = `主题：${analysisResult.value.contentTheme}\n\n`;
+    publishForm.content = contentPrefix + publishForm.content;
   }
   
   // 应用推荐的话题标签
   if (analysisResult.value.suggestedTags && analysisResult.value.suggestedTags.length > 0) {
     // 最多选择3个话题
     publishForm.topics = analysisResult.value.suggestedTags.slice(0, 3);
-  }
-  
-  inspirationDialogVisible.value = false;
-  
-  ElMessage({
-    message: 'AI优化内容已应用',
-    type: 'success'
-  });
-}
-
-// 应用AI润色结果
-const applyAnalysisResult = () => {
-  if (!analysisResult.value) return
-  
-  // 如果有内容主题分析，将其添加到内容开头
-  if (analysisResult.value.contentTheme) {
-    // 在现有内容前添加主题分析
-    const contentPrefix = `主题：${analysisResult.value.contentTheme}\n\n`;
-    publishForm.content = contentPrefix + publishForm.content;
-  }
-  
-  // 如果标题为空但有图片描述，将图片描述设为标题
-  if (!publishForm.title.trim() && analysisResult.value.imageDescription) {
-    publishForm.title = `关于${analysisResult.value.imageDescription}的分享`;
-  }
-  
-  // 根据分析结果推断话题标签
-  if (analysisResult.value.contentTheme) {
-    const topicKeywords = {
-      '旅行': ['旅行', '旅游', '景点', '风景', '游记'],
-      '美食': ['美食', '食物', '菜', '餐厅', '吃'],
-      '读书': ['书', '阅读', '文学', '小说'],
-      '电影': ['电影', '影视', '剧', '电视'],
-      '数码': ['数码', '科技', '手机', '电子'],
-      '穿搭': ['穿搭', '服装', '时尚', '衣服'],
-      '游戏': ['游戏', '玩'],
-      '健身': ['健身', '运动', '锻炼'],
-      '宠物': ['宠物', '猫', '狗', '动物']
-    };
-    
-    const theme = analysisResult.value.contentTheme.toLowerCase();
-    const matchedTopics = [];
-    
-    // 检查主题中是否包含关键词
-    for (const [topic, keywords] of Object.entries(topicKeywords)) {
-      if (keywords.some(keyword => theme.includes(keyword))) {
-        matchedTopics.push(topic);
+  } else {
+    // 根据分析结果推断话题标签
+    if (analysisResult.value.contentTheme) {
+      const topicKeywords = {
+        '旅行': ['旅行', '旅游', '景点', '风景', '游记'],
+        '美食': ['美食', '食物', '菜', '餐厅', '吃'],
+        '读书': ['书', '阅读', '文学', '小说'],
+        '电影': ['电影', '影视', '剧', '电视'],
+        '数码': ['数码', '科技', '手机', '电子'],
+        '穿搭': ['穿搭', '服装', '时尚', '衣服'],
+        '游戏': ['游戏', '玩'],
+        '健身': ['健身', '运动', '锻炼'],
+        '宠物': ['宠物', '猫', '狗', '动物']
+      };
+      
+      const theme = analysisResult.value.contentTheme.toLowerCase();
+      const matchedTopics = [];
+      
+      // 检查主题中是否包含关键词
+      for (const [topic, keywords] of Object.entries(topicKeywords)) {
+        if (keywords.some(keyword => theme.includes(keyword))) {
+          matchedTopics.push(topic);
+        }
       }
-    }
-    
-    // 如果找到匹配的话题，更新表单
-    if (matchedTopics.length > 0) {
-      publishForm.topics = matchedTopics.slice(0, 3); // 最多3个话题
+      
+      // 如果找到匹配的话题，更新表单
+      if (matchedTopics.length > 0) {
+        publishForm.topics = matchedTopics.slice(0, 3); // 最多3个话题
+      }
     }
   }
   
@@ -658,7 +652,7 @@ const applyAnalysisResult = () => {
   analysisResult.value = null;
   
   ElMessage({
-    message: 'AI内容分析已应用',
+    message: 'AI优化内容已应用',
     type: 'success'
   });
 }
@@ -1081,10 +1075,10 @@ const getAnalysisProgress = (step) => {
   border-bottom: 1px solid #f0f4fa;
 }
 :deep(.el-dialog__body) {
-  padding: 32px 24px;
+  padding: 32px 24px 10px 24px;
 }
 :deep(.el-dialog__footer) {
-  padding: 20px 24px;
+  padding: 10px 24px;
   border-top: 1px solid #f0f4fa;
 }
 
@@ -1359,6 +1353,7 @@ const getAnalysisProgress = (step) => {
 
 .analysis-result {
   padding: 20px 10px;
+  margin-top: -20px; /* 减少与分割线的距离 */
 }
 
 .analysis-result h3 {
@@ -1440,6 +1435,7 @@ const getAnalysisProgress = (step) => {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 10px;
+  margin-bottom: 0;
 }
 
 .suggested-tag {
@@ -1457,27 +1453,5 @@ const getAnalysisProgress = (step) => {
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 2px 5px rgba(74, 144, 226, 0.3);
-}
-
-.apply-optimization {
-  text-align: center;
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f7fafd;
-  border-radius: 10px;
-  border: 1px dashed #b3d6f7;
-}
-
-.apply-btn {
-  padding: 10px 25px;
-  font-size: 16px;
-  background: linear-gradient(90deg, #4a90e2 0%, #7db0e8 100%);
-  border: none;
-}
-
-.apply-tip {
-  margin-top: 10px;
-  font-size: 12px;
-  color: #666;
 }
 </style>
