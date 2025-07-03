@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: z-log-admin
+  # 数据库配置
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/redbook_data?serverTimezone=UTC&useUnicode=true&characterEncoding=utf-8
+    username: root
+    password: apple438
+    # 连接池配置
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 15
+      auto-commit: true
+      idle-timeout: 30000
+      pool-name: HikariCP
+      max-lifetime: 1800000
+      connection-timeout: 30000
+      connection-test-query: SELECT 1
+  # JPA配置
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+    open-in-view: false
+  # 文件上传配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  # AI服务配置
+  ai:
+    dashscope:
+      api-key: sk-6bfeac64743244a3af6203f55aa8b5a2
+
+# 服务器配置
+server:
+  port: 8080
+  address: localhost
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.zlog: debug
+    org.springframework.web: DEBUG
+    com.zlog.admin: DEBUG
+
+# 文件存储配置
+file:
+  upload-dir: ./uploads 
