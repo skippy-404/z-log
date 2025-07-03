@@ -37,7 +37,7 @@ public class RefineByAIServiceImpl implements RefineByAIService {
             Resource imageResource = downloadImageFromUrl(image_url);
             
             // 使用ChatClient处理图片
-            String response = chatClient.prompt()
+            String response = ChatClient.create(chatModel).prompt()
                     .user(u -> u.text(prompt != null && !prompt.isEmpty() ? prompt : "描述这张图片中的内容")
                             .media(MimeTypeUtils.IMAGE_JPEG, imageResource))
                     .call()
