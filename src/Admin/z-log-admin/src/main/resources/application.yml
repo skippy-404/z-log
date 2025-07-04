@@ -35,9 +35,7 @@ spring:
   ai:
     dashscope:
       api-key: sk-6bfeac64743244a3af6203f55aa8b5a2
-    openai:
-        api-key: # 补充一下
-        base-url: https://api.openai.com/v1 #替换一下
+
 # 服务器配置
 server:
   port: 8080
